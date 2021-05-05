@@ -1,7 +1,10 @@
 package munchkin.integrator.infrastructure.rest;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import munchkin.integrator.domain.boards.Board;
+import munchkin.integrator.domain.boards.Sizing;
 import munchkin.integrator.domain.boards.UploadBoard;
+import munchkin.integrator.infrastructure.rest.responses.BoardResponseLight;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -18,10 +21,15 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static java.util.Objects.requireNonNull;
+import static munchkin.integrator.domain.Type.DUNGEON;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -30,19 +38,23 @@ class AssetControllerShould {
 
     public static final String NUMBER_OF_COLUMNS = "numberOfColumns";
     public static final String NUMBER_OF_LINES = "numberOfLines";
+    public static final String BOARD_CARD_TYPE = "boardType";
     public static final String URL_UPLOAD_BOARD = "/asset/board";
     @MockBean
     private UploadBoard boardUploadingService;
 
     private final MockMvc mvc;
+    private final ObjectMapper jsonMapper;
 
     private final MockMultipartFile mockMultipartFileCard;
+    private Resource cardImage;
 
-    public AssetControllerShould(@Autowired MockMvc mvc, @Value("classpath:card.jpg") Resource card) throws IOException {
-        requireNonNull(mvc);
-        requireNonNull(card);
-        this.mvc = mvc;
+
+    public AssetControllerShould(@Autowired MockMvc mvc, @Autowired ObjectMapper jsonMapper, @Value("classpath:card.jpg") Resource card) throws IOException {
+        this.mvc = requireNonNull(mvc);
+        this.jsonMapper = requireNonNull(jsonMapper);
         this.mockMultipartFileCard = new MockMultipartFile("file", "test.png", MediaType.MULTIPART_FORM_DATA_VALUE, card.getInputStream().readAllBytes());
+        this.cardImage = requireNonNull(card);
     }
 
     @BeforeEach
@@ -58,6 +70,7 @@ class AssetControllerShould {
                         .file(mockInputFile)
                         .param(NUMBER_OF_COLUMNS, "0")
                         .param(NUMBER_OF_LINES, "0")
+                        .param(BOARD_CARD_TYPE, DUNGEON.name())
         ).andExpect(status().isUnsupportedMediaType());
     }
 
@@ -68,6 +81,7 @@ class AssetControllerShould {
                         .file(mockMultipartFileCard)
                         .param(NUMBER_OF_COLUMNS, "1")
                         .param(NUMBER_OF_LINES, "1")
+                        .param(BOARD_CARD_TYPE, DUNGEON.name())
         ).andExpect(status().isCreated());
     }
 
@@ -79,6 +93,7 @@ class AssetControllerShould {
                         .file(mockMultipartFileCard)
                         .param(NUMBER_OF_COLUMNS, input + "")
                         .param(NUMBER_OF_LINES, "1")
+                        .param(BOARD_CARD_TYPE, DUNGEON.name())
         ).andExpect(status().isBadRequest());
     }
 
@@ -90,6 +105,30 @@ class AssetControllerShould {
                         .file(mockMultipartFileCard)
                         .param(NUMBER_OF_COLUMNS, input + "")
                         .param(NUMBER_OF_LINES, "1")
+                        .param(BOARD_CARD_TYPE, DUNGEON.name())
+        ).andExpect(status().isBadRequest());
+    }
+
+
+    @ParameterizedTest
+    @CsvSource({"CARD", " "})
+    public void reject_not_exist_board_type(String cardType) throws Exception {
+        mvc.perform(
+                multipart(URL_UPLOAD_BOARD)
+                        .file(mockMultipartFileCard)
+                        .param(NUMBER_OF_COLUMNS, "1")
+                        .param(NUMBER_OF_LINES, "1")
+                        .param(BOARD_CARD_TYPE, cardType)
+        ).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void reject_board_type_not_send() throws Exception {
+        mvc.perform(
+                multipart(URL_UPLOAD_BOARD)
+                        .file(mockMultipartFileCard)
+                        .param(NUMBER_OF_LINES, "1")
+                        .param(NUMBER_OF_COLUMNS, "1")
         ).andExpect(status().isBadRequest());
     }
 
@@ -103,6 +142,7 @@ class AssetControllerShould {
                         .file(mockMultipartFileCard)
                         .param(NUMBER_OF_COLUMNS, "2")
                         .param(NUMBER_OF_LINES, "1")
+                        .param(BOARD_CARD_TYPE, DUNGEON.name())
         );
 
         verify(boardUploadingService).uploadNewBoard(boardCaptor.capture());
@@ -123,6 +163,7 @@ class AssetControllerShould {
                         .file(mockMultipartFileCard)
                         .param(NUMBER_OF_COLUMNS, "2")
                         .param(NUMBER_OF_LINES, "1")
+                        .param(BOARD_CARD_TYPE, DUNGEON.name())
         ).andExpect(status().is5xxServerError());
     }
 
@@ -133,6 +174,38 @@ class AssetControllerShould {
                         .file(mockMultipartFileCard)
                         .param(NUMBER_OF_COLUMNS, "2")
                         .param(NUMBER_OF_LINES, "1")
+                        .param(BOARD_CARD_TYPE, DUNGEON.name())
         ).andExpect(status().isCreated());
+    }
+
+    @Test
+    public void call_service_to_get_all_boards() throws Exception {
+        mvc.perform(get(URL_UPLOAD_BOARD)).andExpect(status().isOk());
+
+        verify(boardUploadingService).getAllBoards();
+    }
+
+    @ParameterizedTest
+    @CsvSource({"0", "1", "2", "3"})
+    public void return_mapped_output_for_each_result_of_get_all_board_with_variable_size(int numberOfResults) throws Exception {
+        List<Board> allBoardServiceResults = new ArrayList<>();
+        for (long index = 0; index < numberOfResults; index++) {
+            allBoardServiceResults.add(new Board(index, new Sizing(1, 1), cardImage.getInputStream().readAllBytes()));
+        }
+        doReturn(allBoardServiceResults).when(boardUploadingService).getAllBoards();
+
+        String outputAsJson = mvc.perform(get(URL_UPLOAD_BOARD)).andExpect(status().isOk()).andReturn().getRequest().getContentAsString();
+        BoardResponseLight[] responseLight = jsonMapper.readValue(outputAsJson, BoardResponseLight[].class);
+
+        assertThat(responseLight).isNotNull();
+        assertThat(responseLight).hasSameSizeAs(allBoardServiceResults);
+        Arrays.stream(responseLight).forEach(response -> {
+            assertThat(
+                    allBoardServiceResults.stream().filter(
+                            board -> board.boardId().equals(response.getBoardId())
+                                    && board.sizing().equals(response.getSizing())
+                    ).findAny().isEmpty())
+                    .isFalse();
+        });
     }
 }
