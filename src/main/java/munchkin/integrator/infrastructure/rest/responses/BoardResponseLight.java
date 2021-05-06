@@ -1,11 +1,25 @@
 package munchkin.integrator.infrastructure.rest.responses;
 
-import munchkin.integrator.domain.boards.Sizing;
+import munchkin.integrator.domain.boards.Board;
 
-public class BoardResponseLight {
+import java.io.Serial;
+import java.io.Serializable;
+
+public class BoardResponseLight implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 5119330116945571346L;
 
     private Long boardId;
-    private Sizing sizing;
+    private SizingResponse sizing;
+
+    public BoardResponseLight() {
+    }
+
+    public BoardResponseLight(Board baseBoard) {
+        this.boardId = baseBoard.boardId();
+        this.sizing = new SizingResponse(baseBoard.sizing());
+    }
 
     public Long getBoardId() {
         return boardId;
@@ -15,11 +29,11 @@ public class BoardResponseLight {
         this.boardId = boardId;
     }
 
-    public Sizing getSizing() {
+    public SizingResponse getSizing() {
         return sizing;
     }
 
-    public void setSizing(Sizing sizing) {
+    public void setSizing(SizingResponse sizing) {
         this.sizing = sizing;
     }
 }
