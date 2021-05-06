@@ -4,6 +4,7 @@ import munchkin.integrator.domain.Type;
 import munchkin.integrator.domain.boards.Board;
 import munchkin.integrator.domain.boards.Sizing;
 import munchkin.integrator.domain.boards.UploadBoard;
+import munchkin.integrator.infrastructure.rest.responses.BoardResponseLight;
 import org.springframework.http.InvalidMediaTypeException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -12,6 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 import javax.imageio.ImageIO;
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -39,9 +41,8 @@ public class AssetController {
     }
 
     @GetMapping("board")
-    public List<MultipartFile> getAllBoard() {
-        boardUploadingService.getAllBoards();
-        return null;
+    public List<BoardResponseLight> getAllBoard() {
+        return boardUploadingService.getAllBoards().stream().map(BoardResponseLight::new).collect(Collectors.toList());
     }
 
     public AssetController(UploadBoard boardUploadingService) {

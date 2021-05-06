@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
 import static munchkin.integrator.domain.Type.DUNGEON;
@@ -49,7 +50,7 @@ class AssetControllerBoardBehaviourShould {
     private final ObjectMapper jsonMapper;
 
     private final MockMultipartFile mockMultipartFileCard;
-    private Resource cardImage;
+    private final Resource cardImage;
 
 
     public AssetControllerBoardBehaviourShould(@Autowired MockMvc mvc, @Autowired ObjectMapper jsonMapper, @Value("classpath:card.jpg") Resource card) throws IOException {
@@ -224,22 +225,24 @@ class AssetControllerBoardBehaviourShould {
     public void return_mapped_output_for_each_result_of_get_all_board_with_variable_size(int numberOfResults) throws Exception {
         List<Board> allBoardServiceResults = new ArrayList<>();
         for (long index = 0; index < numberOfResults; index++) {
-            allBoardServiceResults.add(new Board(index, new Sizing(1, 1), cardImage.getInputStream().readAllBytes()));
+            allBoardServiceResults.add(new Board(index, new Sizing(1, 2), cardImage.getInputStream().readAllBytes()));
         }
         doReturn(allBoardServiceResults).when(boardUploadingService).getAllBoards();
 
-        String outputAsJson = mvc.perform(get(URL_UPLOAD_BOARD)).andExpect(status().isOk()).andReturn().getRequest().getContentAsString();
+        String outputAsJson = mvc.perform(get(URL_UPLOAD_BOARD)).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        System.out.println(outputAsJson);
         BoardResponseLight[] responseLight = jsonMapper.readValue(outputAsJson, BoardResponseLight[].class);
 
         assertThat(responseLight).isNotNull();
         assertThat(responseLight).hasSameSizeAs(allBoardServiceResults);
-        Arrays.stream(responseLight).forEach(response -> {
-            assertThat(
-                    allBoardServiceResults.stream().filter(
-                            board -> board.boardId().equals(response.getBoardId())
-                                    && board.sizing().equals(response.getSizing())
-                    ).findAny().isEmpty())
-                    .isFalse();
-        });
+        Arrays.stream(responseLight).forEach(response -> assertThat(
+                allBoardServiceResults.stream().filter(
+                        board -> !(
+                                board.boardId().equals(response.getBoardId())
+                                        && board.sizing().numberOfLines() == response.getSizing().getNumberOfLines()
+                                        && board.sizing().numberOfColumns() == response.getSizing().getNumberOfLines()
+                        )
+                ).collect(Collectors.toList())
+        ).hasSize(numberOfResults));
     }
 }
