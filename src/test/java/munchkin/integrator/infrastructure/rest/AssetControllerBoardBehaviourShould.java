@@ -50,7 +50,7 @@ class AssetControllerBoardBehaviourShould {
     private final ObjectMapper jsonMapper;
 
     private final MockMultipartFile mockMultipartFileCard;
-    private Resource cardImage;
+    private final Resource cardImage;
 
 
     public AssetControllerBoardBehaviourShould(@Autowired MockMvc mvc, @Autowired ObjectMapper jsonMapper, @Value("classpath:card.jpg") Resource card) throws IOException {
@@ -235,15 +235,14 @@ class AssetControllerBoardBehaviourShould {
 
         assertThat(responseLight).isNotNull();
         assertThat(responseLight).hasSameSizeAs(allBoardServiceResults);
-        Arrays.stream(responseLight).forEach(response -> {
-            assertThat(
-                    allBoardServiceResults.stream().peek(System.out::println).peek(x -> System.out.println(x.boardId() + " " + response.getBoardId())).filter(
-                            board -> !(
-                                    board.boardId().equals(response.getBoardId())
-                                            && board.sizing().numberOfLines() == response.getSizing().getNumberOfLines()
-                                            && board.sizing().numberOfColumns() == response.getSizing().getNumberOfLines()
-                            )
-                    ).collect(Collectors.toList())).hasSize(numberOfResults);
-        });
+        Arrays.stream(responseLight).forEach(response -> assertThat(
+                allBoardServiceResults.stream().filter(
+                        board -> !(
+                                board.boardId().equals(response.getBoardId())
+                                        && board.sizing().numberOfLines() == response.getSizing().getNumberOfLines()
+                                        && board.sizing().numberOfColumns() == response.getSizing().getNumberOfLines()
+                        )
+                ).collect(Collectors.toList())
+        ).hasSize(numberOfResults));
     }
 }

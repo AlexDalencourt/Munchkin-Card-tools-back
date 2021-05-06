@@ -5,8 +5,6 @@ import munchkin.integrator.domain.boards.Board;
 import munchkin.integrator.domain.boards.Sizing;
 import munchkin.integrator.domain.boards.UploadBoard;
 import munchkin.integrator.infrastructure.rest.responses.BoardResponseLight;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.InvalidMediaTypeException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,8 +22,6 @@ import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 @RestController
 @RequestMapping("asset")
 public class AssetController {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(AssetController.class);
 
     private final UploadBoard boardUploadingService;
 
