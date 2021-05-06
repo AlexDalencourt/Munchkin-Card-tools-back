@@ -30,7 +30,7 @@ public class AssetController {
         if (ImageIO.read(file.getInputStream()) == null) {
             throw new InvalidMediaTypeException("Image file", file.getOriginalFilename());
         }
-        if (numberOfColumns <= 0 || numberOfLines <= 0 || boardType != null) {
+        if (numberOfColumns <= 0 || numberOfLines <= 0 || boardType == null) {
             throw new IllegalArgumentException("Number of columns and lines should be positive and superior to 0, and board type must be valid");
         }
         if (!boardUploadingService.uploadNewBoard(new Board(null, new Sizing(numberOfColumns, numberOfLines), file.getBytes()))) {

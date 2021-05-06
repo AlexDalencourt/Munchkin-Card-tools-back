@@ -1,6 +1,7 @@
 package munchkin.integrator.infrastructure.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import munchkin.integrator.domain.Type;
 import munchkin.integrator.domain.boards.Board;
 import munchkin.integrator.domain.boards.Sizing;
 import munchkin.integrator.domain.boards.UploadBoard;
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +36,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AssetController.class)
-class AssetControllerShould {
+class AssetControllerBoardBehaviourShould {
 
     public static final String NUMBER_OF_COLUMNS = "numberOfColumns";
     public static final String NUMBER_OF_LINES = "numberOfLines";
@@ -50,7 +52,7 @@ class AssetControllerShould {
     private Resource cardImage;
 
 
-    public AssetControllerShould(@Autowired MockMvc mvc, @Autowired ObjectMapper jsonMapper, @Value("classpath:card.jpg") Resource card) throws IOException {
+    public AssetControllerBoardBehaviourShould(@Autowired MockMvc mvc, @Autowired ObjectMapper jsonMapper, @Value("classpath:card.jpg") Resource card) throws IOException {
         this.mvc = requireNonNull(mvc);
         this.jsonMapper = requireNonNull(jsonMapper);
         this.mockMultipartFileCard = new MockMultipartFile("file", "test.png", MediaType.MULTIPART_FORM_DATA_VALUE, card.getInputStream().readAllBytes());
@@ -109,10 +111,9 @@ class AssetControllerShould {
         ).andExpect(status().isBadRequest());
     }
 
-
     @ParameterizedTest
-    @CsvSource({"CARD", " "})
-    public void reject_not_exist_board_type(String cardType) throws Exception {
+    @CsvSource({"CARD", "au"})
+    public void reject_not_exist_board_type_for_upload_bord(String cardType) throws Exception {
         mvc.perform(
                 multipart(URL_UPLOAD_BOARD)
                         .file(mockMultipartFileCard)
@@ -120,6 +121,39 @@ class AssetControllerShould {
                         .param(NUMBER_OF_LINES, "1")
                         .param(BOARD_CARD_TYPE, cardType)
         ).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void reject_not_board_type_for_upload_board() throws Exception {
+        mvc.perform(
+                multipart(URL_UPLOAD_BOARD)
+                        .file(mockMultipartFileCard)
+                        .param(NUMBER_OF_COLUMNS, "1")
+                        .param(NUMBER_OF_LINES, "1")
+        ).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void reject_empty_board_type_upload_board() throws Exception {
+        mvc.perform(
+                multipart(URL_UPLOAD_BOARD)
+                        .file(mockMultipartFileCard)
+                        .param(NUMBER_OF_COLUMNS, "1")
+                        .param(NUMBER_OF_LINES, "1")
+                        .param(BOARD_CARD_TYPE, "")
+        ).andExpect(status().isBadRequest());
+    }
+
+    @ParameterizedTest
+    @EnumSource(Type.class)
+    public void accept_values_of_enum_types_for_upload_board(Type boardType) throws Exception {
+        mvc.perform(
+                multipart(URL_UPLOAD_BOARD)
+                        .file(mockMultipartFileCard)
+                        .param(NUMBER_OF_COLUMNS, "1")
+                        .param(NUMBER_OF_LINES, "1")
+                        .param(BOARD_CARD_TYPE, boardType.name())
+        ).andExpect(status().isCreated());
     }
 
     @Test
