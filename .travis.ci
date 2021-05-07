@@ -1,0 +1,10 @@
+language: java
+
+branches:
+    only:
+        - master
+
+jdk:
+    - openjdk15
+os:
+    - linux
