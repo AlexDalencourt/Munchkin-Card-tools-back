@@ -1,6 +1,7 @@
 package munchkin.integrator.infrastructure.repositories.entities;
 
 import munchkin.integrator.domain.boards.Board;
+import munchkin.integrator.domain.boards.Sizing;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.Column;
@@ -27,6 +28,13 @@ public class BoardEntity {
     public BoardEntity() {
     }
 
+    public BoardEntity(Long checksum, byte[] image, int columns, int lines) {
+        this.checksum = checksum;
+        this.image = image;
+        this.columns = columns;
+        this.lines = lines;
+    }
+
     public BoardEntity(Board boardToSave) {
         requireNonNull(boardToSave);
         requireNonNull(boardToSave.sizing());
@@ -49,5 +57,9 @@ public class BoardEntity {
 
     public int getLines() {
         return lines;
+    }
+
+    public Board toBoard() {
+        return new Board(checksum, new Sizing(columns, lines), image);
     }
 }

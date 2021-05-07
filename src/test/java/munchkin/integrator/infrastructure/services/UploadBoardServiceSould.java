@@ -10,6 +10,9 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.Arrays;
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -19,11 +22,11 @@ class UploadBoardServiceSould {
     private final UploadBoardService uploadBoardService;
 
     @Mock
-    private BoardRepository boardRepository;
+    private BoardRepository mockBoardRepository;
 
     public UploadBoardServiceSould() {
         MockitoAnnotations.openMocks(this);
-        this.uploadBoardService = new UploadBoardService(boardRepository);
+        this.uploadBoardService = new UploadBoardService(mockBoardRepository);
     }
 
     @Test
@@ -31,11 +34,11 @@ class UploadBoardServiceSould {
         Board mockBoard = mock(Board.class);
         doReturn(new byte[0]).when(mockBoard).boardImage();
         doReturn(mock(Sizing.class)).when(mockBoard).sizing();
-        doReturn(mock(BoardEntity.class)).when(boardRepository).save(any(BoardEntity.class));
+        doReturn(mock(BoardEntity.class)).when(mockBoardRepository).save(any(BoardEntity.class));
 
         uploadBoardService.uploadNewBoard(mockBoard);
 
-        verify(boardRepository).save(any(BoardEntity.class));
+        verify(mockBoardRepository).save(any(BoardEntity.class));
     }
 
     @Captor
@@ -48,11 +51,11 @@ class UploadBoardServiceSould {
         Sizing size = new Sizing(1, 2);
         doReturn(inputImage).when(mockBoard).boardImage();
         doReturn(size).when(mockBoard).sizing();
-        doReturn(mock(BoardEntity.class)).when(boardRepository).save(any(BoardEntity.class));
+        doReturn(mock(BoardEntity.class)).when(mockBoardRepository).save(any(BoardEntity.class));
 
         uploadBoardService.uploadNewBoard(mockBoard);
 
-        verify(boardRepository).save(boardCaptor.capture());
+        verify(mockBoardRepository).save(boardCaptor.capture());
         BoardEntity entity = boardCaptor.getValue();
         assertThat(entity.getImage()).isEqualTo(inputImage);
         assertThat(entity.getColumns()).isEqualTo(size.numberOfColumns());
@@ -67,7 +70,7 @@ class UploadBoardServiceSould {
         doReturn(inputImage).when(mockBoard).boardImage();
         doReturn(size).when(mockBoard).sizing();
         BoardEntity entityOutput = mock(BoardEntity.class);
-        doReturn(entityOutput).when(boardRepository).save(any(BoardEntity.class));
+        doReturn(entityOutput).when(mockBoardRepository).save(any(BoardEntity.class));
         doReturn(1L).when(entityOutput).getChecksum();
 
 
@@ -84,11 +87,22 @@ class UploadBoardServiceSould {
         doReturn(inputImage).when(mockBoard).boardImage();
         doReturn(size).when(mockBoard).sizing();
         BoardEntity entityOutput = mock(BoardEntity.class);
-        doReturn(entityOutput).when(boardRepository).save(any(BoardEntity.class));
+        doReturn(entityOutput).when(mockBoardRepository).save(any(BoardEntity.class));
         doReturn(null).when(entityOutput).getChecksum();
 
         boolean result = uploadBoardService.uploadNewBoard(mockBoard);
 
         assertThat(result).isFalse();
+    }
+
+    @Test
+    public void return_mapped_output_from_find_all_boards_repository() {
+        List<BoardEntity> boardEntities = Arrays.asList(mock(BoardEntity.class), mock(BoardEntity.class), mock(BoardEntity.class));
+        doReturn(boardEntities).when(mockBoardRepository).findAll();
+
+        List<Board> outputFromService = uploadBoardService.getAllBoards();
+
+        assertThat(outputFromService).hasSameSizeAs(boardEntities);
+        boardEntities.forEach(mock -> verify(mock).toBoard());
     }
 }
