@@ -10,4 +10,4 @@ jdk:
 
 os: linux
 arch:
-  - ppc64le
+  - arm64
