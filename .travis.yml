@@ -1,11 +1,12 @@
 language: java
 
 branches:
-  only:
-    - master
+    only:
+        - master
+        - develop
 
 jdk:
-  - openjdk15
+    - openjdk15
 
 os: linux
 arch:
