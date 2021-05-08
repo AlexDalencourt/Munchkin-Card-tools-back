@@ -10,6 +10,4 @@ jdk:
 
 os: linux
 arch:
-  - arm64
   - ppc64le
-  - s390x
