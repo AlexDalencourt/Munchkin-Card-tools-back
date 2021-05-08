@@ -1,10 +1,14 @@
 language: java
 
 branches:
-    only:
-        - master
+  only:
+    - master
 
 jdk:
-    - openjdk15
-os:
-    - linux
+  - openjdk15
+
+os: linux
+arch:
+  - arm64
+  - ppc64le
+  - s390x
