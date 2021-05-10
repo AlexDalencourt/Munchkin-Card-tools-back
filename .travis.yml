@@ -1,9 +1,9 @@
 language: java
 
 branches:
-    only:
-        - master
-        - develop
+  only:
+    - master
+    - develop
 
 jdk:
   - openjdk11
@@ -12,3 +12,5 @@ os: linux
 arch:
   - arm64
 dist: xenial
+before_install:
+  - sudo apt-get -yq install maven
