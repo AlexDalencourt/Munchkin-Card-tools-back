@@ -12,3 +12,9 @@ os: linux
 arch:
   - arm64
 dist: xenial
+script:
+  - jdk_switcher use openjdk10
+  - wget https://github.com/sormuras/bach/raw/master/install-jdk.sh
+  - chmod +x $TRAVIS_BUILD_DIR/install-jdk.sh
+  - export JAVA_HOME=$HOME/openjdk15
+  - $TRAVIS_BUILD_DIR/install-jdk.sh -F 15 --target $JAVA_HOME
