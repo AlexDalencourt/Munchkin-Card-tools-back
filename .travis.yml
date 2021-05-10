@@ -6,11 +6,12 @@ branches:
     - develop
 
 jdk:
-  - openjdk11
+  - openjdk15
 
 os: linux
 arch:
   - arm64
 dist: xenial
 before_install:
+  - sudo apt-get -yq install openjdk-15-jdk
   - sudo apt-get -yq install maven
