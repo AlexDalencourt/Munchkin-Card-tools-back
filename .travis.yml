@@ -11,6 +11,6 @@ jdk:
 os: linux
 arch:
   - arm64
-dist: focal
+dist: bionic
 before_install:
   - sudo apt-get -yq install maven
