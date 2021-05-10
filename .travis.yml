@@ -10,7 +10,8 @@ jdk:
 
 os: linux
 arch:
-  - arm64
-dist: bionic
-before_install:
-  - sudo apt-get -yq install maven
+  #  - arm64
+  - ppc64le
+dist: xenial
+#before_install:
+#  - sudo apt-get -yq install maven
