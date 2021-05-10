@@ -1,10 +1,17 @@
 language: java
 
 branches:
-    only:
-        - master
+  only:
+    - master
+    - develop
 
 jdk:
-    - openjdk15
-os:
-    - linux
+  - openjdk15
+
+os: linux
+arch:
+  #  - arm64
+  - ppc64le
+dist: focal
+#before_install:
+#  - sudo apt-get -yq install maven

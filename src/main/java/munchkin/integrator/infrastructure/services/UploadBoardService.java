@@ -4,9 +4,9 @@ import munchkin.integrator.domain.boards.Board;
 import munchkin.integrator.domain.boards.UploadBoard;
 import munchkin.integrator.infrastructure.repositories.BoardRepository;
 import munchkin.integrator.infrastructure.repositories.entities.BoardEntity;
-import org.hibernate.cfg.NotYetImplementedException;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
 
@@ -25,6 +25,6 @@ public class UploadBoardService implements UploadBoard {
 
     @Override
     public List<Board> getAllBoards() {
-        throw new NotYetImplementedException();
+        return boardRepository.findAll().stream().map(BoardEntity::toBoard).collect(Collectors.toList());
     }
 }
