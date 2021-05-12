@@ -5,14 +5,17 @@ import munchkin.integrator.domain.boards.Board;
 import munchkin.integrator.domain.boards.Sizing;
 import munchkin.integrator.domain.boards.UploadBoard;
 import munchkin.integrator.infrastructure.rest.responses.BoardResponseLight;
+import munchkin.integrator.infrastructure.rest.responses.BoardResponseWithResource;
 import org.springframework.http.InvalidMediaTypeException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.imageio.ImageIO;
+import javax.websocket.server.PathParam;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
@@ -41,8 +44,13 @@ public class AssetController {
     }
 
     @GetMapping("board")
-    public List<BoardResponseLight> getAllBoard() {
-        return boardUploadingService.getAllBoards().stream().map(BoardResponseLight::new).collect(Collectors.toList());
+    public List<BoardResponseLight> getAllBoards() {
+        return boardUploadingService.getAllBoards(false).stream().map(BoardResponseLight::new).collect(Collectors.toList());
+    }
+
+    @GetMapping("board/full")
+    public List<BoardResponseWithResource> getAllBoardsFull(@PathParam("resizeImages") Optional<Boolean> resizeImages) {
+        return boardUploadingService.getAllBoards(resizeImages.orElse(false)).stream().map(BoardResponseWithResource::new).collect(Collectors.toList());
     }
 
     public AssetController(UploadBoard boardUploadingService) {

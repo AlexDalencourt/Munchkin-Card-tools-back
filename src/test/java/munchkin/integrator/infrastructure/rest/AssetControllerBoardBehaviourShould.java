@@ -6,6 +6,7 @@ import munchkin.integrator.domain.boards.Board;
 import munchkin.integrator.domain.boards.Sizing;
 import munchkin.integrator.domain.boards.UploadBoard;
 import munchkin.integrator.infrastructure.rest.responses.BoardResponseLight;
+import munchkin.integrator.infrastructure.rest.responses.BoardResponseWithResource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -43,6 +44,8 @@ class AssetControllerBoardBehaviourShould {
     public static final String NUMBER_OF_LINES = "numberOfLines";
     public static final String BOARD_CARD_TYPE = "boardType";
     public static final String URL_UPLOAD_BOARD = "/asset/board";
+    public static final String URL_UPLOAD_BOARD_FULL = "/asset/board/full";
+
     @MockBean
     private UploadBoard boardUploadingService;
 
@@ -217,7 +220,14 @@ class AssetControllerBoardBehaviourShould {
     public void call_service_to_get_all_boards() throws Exception {
         mvc.perform(get(URL_UPLOAD_BOARD)).andExpect(status().isOk());
 
-        verify(boardUploadingService).getAllBoards();
+        verify(boardUploadingService).getAllBoards(eq(false));
+    }
+
+    @Test
+    public void call_service_to_get_all_boards_full_with_image() throws Exception {
+        mvc.perform(get(URL_UPLOAD_BOARD_FULL)).andExpect(status().isOk());
+
+        verify(boardUploadingService).getAllBoards(anyBoolean());
     }
 
     @ParameterizedTest
@@ -227,7 +237,7 @@ class AssetControllerBoardBehaviourShould {
         for (long index = 0; index < numberOfResults; index++) {
             allBoardServiceResults.add(new Board(index, new Sizing(1, 2), cardImage.getInputStream().readAllBytes()));
         }
-        doReturn(allBoardServiceResults).when(boardUploadingService).getAllBoards();
+        doReturn(allBoardServiceResults).when(boardUploadingService).getAllBoards(anyBoolean());
 
         String outputAsJson = mvc.perform(get(URL_UPLOAD_BOARD)).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         System.out.println(outputAsJson);
@@ -244,5 +254,68 @@ class AssetControllerBoardBehaviourShould {
                         )
                 ).collect(Collectors.toList())
         ).hasSize(numberOfResults));
+    }
+
+    @ParameterizedTest
+    @CsvSource({"0", "1", "2", "3"})
+    public void return_mapped_output_for_each_result_of_get_all_board_full_with_variable_size(int numberOfResults) throws Exception {
+        List<Board> allBoardServiceResults = new ArrayList<>();
+        for (long index = 0; index < numberOfResults; index++) {
+            allBoardServiceResults.add(new Board(index, new Sizing(1, 2), cardImage.getInputStream().readAllBytes()));
+        }
+        doReturn(allBoardServiceResults).when(boardUploadingService).getAllBoards(anyBoolean());
+
+        String outputAsJson = mvc.perform(get(URL_UPLOAD_BOARD_FULL)).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        System.out.println(outputAsJson);
+        BoardResponseWithResource[] responseLight = jsonMapper.readValue(outputAsJson, BoardResponseWithResource[].class);
+
+        assertThat(responseLight).isNotNull();
+        assertThat(responseLight).hasSameSizeAs(allBoardServiceResults);
+        Arrays.stream(responseLight).forEach(response -> assertThat(
+                allBoardServiceResults.stream().filter(
+                        board -> !(
+                                board.boardId().equals(response.getBoardId())
+                                        && board.sizing().numberOfLines() == response.getSizing().getNumberOfLines()
+                                        && board.sizing().numberOfColumns() == response.getSizing().getNumberOfLines()
+                                        && board.boardImage() == response.getImage()
+                        )
+                ).collect(Collectors.toList())
+        ).hasSize(numberOfResults));
+    }
+
+    @Test
+    public void call_service_to_get_all_boards_with_false_option_resize_image() throws Exception {
+        mvc.perform(get(URL_UPLOAD_BOARD)).andExpect(status().isOk());
+
+        verify(boardUploadingService).getAllBoards(eq(false));
+    }
+
+
+    @Test
+    public void call_service_to_get_all_boards_with_false_option_resize_image_when_option_is_true_on_parameter() throws Exception {
+        mvc.perform(get(URL_UPLOAD_BOARD).param("resizeImages", "true")).andExpect(status().isOk());
+
+        verify(boardUploadingService).getAllBoards(eq(false));
+    }
+
+    @Test
+    public void call_service_to_get_all_boards_full_with_option_resize_image_when_option_is_on_parameters() throws Exception {
+        mvc.perform(get(URL_UPLOAD_BOARD_FULL).param("resizeImages", "true")).andExpect(status().isOk());
+
+        verify(boardUploadingService).getAllBoards(eq(true));
+    }
+
+    @Test
+    public void call_service_to_get_all_boards_full_with_option_resize_image_false_when_option_is_false_on_parameters() throws Exception {
+        mvc.perform(get(URL_UPLOAD_BOARD_FULL).param("resizeImages", "false")).andExpect(status().isOk());
+
+        verify(boardUploadingService).getAllBoards(eq(false));
+    }
+
+    @Test
+    public void call_service_to_get_all_boards_full_with_option_resize_image_false_when_option_is_not_on_parameters() throws Exception {
+        mvc.perform(get(URL_UPLOAD_BOARD_FULL).param("resizeImages", "false")).andExpect(status().isOk());
+
+        verify(boardUploadingService).getAllBoards(eq(false));
     }
 }

@@ -6,5 +6,5 @@ public interface UploadBoard {
 
     boolean uploadNewBoard(Board boardToSave);
 
-    List<Board> getAllBoards();
+    List<Board> getAllBoards(boolean resizeImages);
 }

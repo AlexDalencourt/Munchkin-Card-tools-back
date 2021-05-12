@@ -24,7 +24,7 @@ public class UploadBoardService implements UploadBoard {
     }
 
     @Override
-    public List<Board> getAllBoards() {
+    public List<Board> getAllBoards(boolean resizeImages) {
         return boardRepository.findAll().stream().map(BoardEntity::toBoard).collect(Collectors.toList());
     }
 }

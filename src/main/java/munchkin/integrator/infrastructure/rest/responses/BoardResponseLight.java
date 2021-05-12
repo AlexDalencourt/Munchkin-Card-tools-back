@@ -13,6 +13,7 @@ public class BoardResponseLight implements Serializable {
     private Long boardId;
     private SizingResponse sizing;
 
+    @SuppressWarnings("unused")
     public BoardResponseLight() {
     }
 
@@ -25,6 +26,7 @@ public class BoardResponseLight implements Serializable {
         return boardId;
     }
 
+    @SuppressWarnings("unused")
     public void setBoardId(Long boardId) {
         this.boardId = boardId;
     }
@@ -33,6 +35,7 @@ public class BoardResponseLight implements Serializable {
         return sizing;
     }
 
+    @SuppressWarnings("unused")
     public void setSizing(SizingResponse sizing) {
         this.sizing = sizing;
     }

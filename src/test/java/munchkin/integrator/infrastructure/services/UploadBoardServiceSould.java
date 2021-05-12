@@ -100,7 +100,7 @@ class UploadBoardServiceSould {
         List<BoardEntity> boardEntities = Arrays.asList(mock(BoardEntity.class), mock(BoardEntity.class), mock(BoardEntity.class));
         doReturn(boardEntities).when(mockBoardRepository).findAll();
 
-        List<Board> outputFromService = uploadBoardService.getAllBoards();
+        List<Board> outputFromService = uploadBoardService.getAllBoards(eq(true));
 
         assertThat(outputFromService).hasSameSizeAs(boardEntities);
         boardEntities.forEach(mock -> verify(mock).toBoard());
