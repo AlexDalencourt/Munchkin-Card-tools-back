@@ -12,6 +12,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -24,9 +25,12 @@ class UploadBoardServiceSould {
     @Mock
     private BoardRepository mockBoardRepository;
 
+    @Mock
+    private ImageService mockImageService;
+
     public UploadBoardServiceSould() {
         MockitoAnnotations.openMocks(this);
-        this.uploadBoardService = new UploadBoardService(mockBoardRepository);
+        this.uploadBoardService = new UploadBoardService(mockBoardRepository, mockImageService);
     }
 
     @Test
@@ -100,9 +104,72 @@ class UploadBoardServiceSould {
         List<BoardEntity> boardEntities = Arrays.asList(mock(BoardEntity.class), mock(BoardEntity.class), mock(BoardEntity.class));
         doReturn(boardEntities).when(mockBoardRepository).findAll();
 
-        List<Board> outputFromService = uploadBoardService.getAllBoards(eq(true));
+        List<Board> outputFromService = uploadBoardService.getAllBoards(false);
 
         assertThat(outputFromService).hasSameSizeAs(boardEntities);
         boardEntities.forEach(mock -> verify(mock).toBoard());
+    }
+
+    @Test
+    public void call_resize_service_for_get_all_boards() {
+        List<BoardEntity> boardEntities = Arrays.asList(mock(BoardEntity.class), mock(BoardEntity.class), mock(BoardEntity.class));
+        doReturn(boardEntities).when(mockBoardRepository).findAll();
+
+        uploadBoardService.getAllBoards(true);
+
+        verify(mockImageService).reziseBoards(anyList());
+    }
+
+    @Test
+    public void not_call_resize_service_for_get_all_boards_when_it_is_not_ask() {
+        uploadBoardService.getAllBoards(false);
+
+        verifyNoInteractions(mockImageService);
+    }
+
+    @Captor
+    private ArgumentCaptor<List<Board>> boardListCaptor;
+
+    @Test
+    public void call_resize_service_with_mapped_board_list_from_database() {
+        List<BoardEntity> boardEntities =
+                Arrays.asList(
+                        new BoardEntity(1L, new byte[0], 0, 0),
+                        new BoardEntity(2L, new byte[0], 0, 0),
+                        new BoardEntity(3L, new byte[0], 0, 0)
+                );
+        doReturn(boardEntities).when(mockBoardRepository).findAll();
+
+        uploadBoardService.getAllBoards(true);
+
+        verify(mockImageService).reziseBoards(boardListCaptor.capture());
+        List<Board> boardListCaptured = boardListCaptor.getValue();
+        assertThat(boardListCaptured).hasSameElementsAs(boardEntities.stream().map(BoardEntity::toBoard).collect(Collectors.toList()));
+
+        verify(mockBoardRepository).findAll();
+        verifyNoMoreInteractions(mockBoardRepository, mockImageService);
+    }
+
+    @Test
+    public void call_resize_service_on_all_boards_should_return_new_list() {
+        List<BoardEntity> boardEntities =
+                Arrays.asList(
+                        new BoardEntity(1L, new byte[0], 0, 0),
+                        new BoardEntity(2L, new byte[0], 0, 0),
+                        new BoardEntity(3L, new byte[0], 0, 0)
+                );
+        doReturn(boardEntities).when(mockBoardRepository).findAll();
+        List<Board> boardsResized =
+                Arrays.asList(
+                        new Board(4L, new Sizing(0, 0), new byte[0]),
+                        new Board(5L, new Sizing(0, 0), new byte[0]),
+                        new Board(6L, new Sizing(0, 0), new byte[0])
+                );
+        doReturn(boardsResized).when(mockImageService).reziseBoards(anyList());
+
+        List<Board> outputBoardList = uploadBoardService.getAllBoards(true);
+
+        assertThat(outputBoardList).hasSameElementsAs(boardsResized);
+        assertThat(outputBoardList).doesNotContainAnyElementsOf(boardEntities.stream().map(BoardEntity::toBoard).collect(Collectors.toList()));
     }
 }

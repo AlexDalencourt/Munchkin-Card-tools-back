@@ -1,6 +1,7 @@
 package munchkin.integrator.domain.boards;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
 
@@ -25,5 +26,18 @@ public class Board {
 
     public Long boardId() {
         return boardId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Board board = (Board) o;
+        return Objects.equals(boardId, board.boardId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(boardId);
     }
 }

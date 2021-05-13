@@ -12,10 +12,13 @@ import static java.util.Objects.requireNonNull;
 
 public class UploadBoardService implements UploadBoard {
 
-    private BoardRepository boardRepository;
+    private final BoardRepository boardRepository;
 
-    public UploadBoardService(BoardRepository boardRepository) {
+    private final ImageService imageService;
+
+    public UploadBoardService(BoardRepository boardRepository, ImageService imageService) {
         this.boardRepository = requireNonNull(boardRepository);
+        this.imageService = requireNonNull(imageService);
     }
 
     @Override
@@ -25,6 +28,10 @@ public class UploadBoardService implements UploadBoard {
 
     @Override
     public List<Board> getAllBoards(boolean resizeImages) {
-        return boardRepository.findAll().stream().map(BoardEntity::toBoard).collect(Collectors.toList());
+        List<Board> allBoards = boardRepository.findAll().stream().map(BoardEntity::toBoard).collect(Collectors.toList());
+        if (resizeImages) {
+            return imageService.reziseBoards(allBoards);
+        }
+        return allBoards;
     }
 }

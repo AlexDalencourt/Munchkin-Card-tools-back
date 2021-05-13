@@ -11,6 +11,6 @@ public class BeanInjection {
 
     @Bean
     public UploadBoard boardUploadingService(BoardRepository boardRepository) {
-        return new UploadBoardService(boardRepository);
+        return new UploadBoardService(boardRepository, null);
     }
 }
