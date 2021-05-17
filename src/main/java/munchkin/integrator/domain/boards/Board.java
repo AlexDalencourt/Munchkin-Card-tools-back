@@ -16,6 +16,12 @@ public class Board {
         this.boardImage = boardImage;
     }
 
+    public Board(Board baseBoard, byte[] boardImage) {
+        this.boardId = baseBoard.boardId();
+        this.sizing = baseBoard.sizing();
+        this.boardImage = boardImage;
+    }
+
     public byte[] boardImage() {
         return Arrays.copyOf(boardImage, boardImage.length);
     }
