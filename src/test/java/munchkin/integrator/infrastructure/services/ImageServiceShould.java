@@ -13,11 +13,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.Resource;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -32,19 +34,22 @@ class ImageServiceShould {
     private final ImageService imageService;
 
     private final Resource card;
+    private final Resource cardPng;
     private final Resource card25Percent;
     private final Resource card5Percent;
 
     public ImageServiceShould(
             @Value("classpath:card.jpg") Resource card,
             @Value("classpath:card-25%.jpg") Resource card25Percent,
-            @Value("classpath:card-5%.jpg") Resource card5Percent
+            @Value("classpath:card-5%.jpg") Resource card5Percent,
+            @Value("classpath:card.png") Resource cardPng
     ) {
         MockitoAnnotations.openMocks(this);
         this.imageService = new ImageService();
         this.card = card;
         this.card25Percent = card25Percent;
         this.card5Percent = card5Percent;
+        this.cardPng = cardPng;
     }
 
     @Test
@@ -104,4 +109,23 @@ class ImageServiceShould {
         );
     }
 
+    @ParameterizedTest
+    @MethodSource("parameterizedFileTypeMatch")
+    public void reziseBoards_should_conserve_original_file_extension(Resource inputImage) throws IOException {
+        List<Board> images = Collections.singletonList(new Board(0L, new Sizing(1, 1), inputImage.getInputStream().readAllBytes()));
+        Iterator<ImageReader> expectedImageReader = ImageIO.getImageReaders(ImageIO.createImageInputStream(inputImage.getInputStream()));
+
+        List<Board> resultBoards = imageService.reziseBoards(images, 25);
+
+        Iterator<ImageReader> generatedImageReader = ImageIO.getImageReaders(ImageIO.createImageInputStream(new ByteArrayInputStream(resultBoards.get(0).boardImage())));
+        assertThat(generatedImageReader.next().getFormatName()).isEqualTo(expectedImageReader.next().getFormatName());
+    }
+
+    @SuppressWarnings("unused")
+    private Stream<Resource> parameterizedFileTypeMatch() {
+        return Stream.of(
+                card,
+                cardPng
+        );
+    }
 }
