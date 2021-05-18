@@ -117,7 +117,7 @@ class UploadBoardServiceSould {
 
         uploadBoardService.getAllBoards(true);
 
-        verify(mockImageService).reziseBoards(anyList());
+        verify(mockImageService).reziseBoards(anyList(), eq(10));
     }
 
     @Test
@@ -142,7 +142,7 @@ class UploadBoardServiceSould {
 
         uploadBoardService.getAllBoards(true);
 
-        verify(mockImageService).reziseBoards(boardListCaptor.capture());
+        verify(mockImageService).reziseBoards(boardListCaptor.capture(), eq(10));
         List<Board> boardListCaptured = boardListCaptor.getValue();
         assertThat(boardListCaptured).hasSameElementsAs(boardEntities.stream().map(BoardEntity::toBoard).collect(Collectors.toList()));
 
@@ -165,7 +165,7 @@ class UploadBoardServiceSould {
                         new Board(5L, new Sizing(0, 0), new byte[0]),
                         new Board(6L, new Sizing(0, 0), new byte[0])
                 );
-        doReturn(boardsResized).when(mockImageService).reziseBoards(anyList());
+        doReturn(boardsResized).when(mockImageService).reziseBoards(anyList(), eq(10));
 
         List<Board> outputBoardList = uploadBoardService.getAllBoards(true);
 

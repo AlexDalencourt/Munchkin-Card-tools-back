@@ -30,7 +30,7 @@ public class UploadBoardService implements UploadBoard {
     public List<Board> getAllBoards(boolean resizeImages) {
         List<Board> allBoards = boardRepository.findAll().stream().map(BoardEntity::toBoard).collect(Collectors.toList());
         if (resizeImages) {
-            return imageService.reziseBoards(allBoards);
+            return imageService.reziseBoards(allBoards, 10);
         }
         return allBoards;
     }

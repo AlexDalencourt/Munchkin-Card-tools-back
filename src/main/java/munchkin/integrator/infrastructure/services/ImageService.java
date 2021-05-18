@@ -15,17 +15,17 @@ import java.util.stream.Collectors;
 
 public class ImageService {
 
-    public List<Board> reziseBoards(List<Board> boards) {
+    public List<Board> reziseBoards(List<Board> boards, final int reduction) {
         return boards.stream().map(board -> {
             try {
                 BufferedImage originalImage = ImageIO.read(new ByteArrayInputStream(board.boardImage()));
                 BufferedImage resizedImage =
                         new BufferedImage(
-                                getReductionSizeBy4InPixels(originalImage.getWidth()),
-                                getReductionSizeBy4InPixels(originalImage.getHeight()),
+                                getReductionSizeBy4InPixels(originalImage.getWidth(), reduction),
+                                getReductionSizeBy4InPixels(originalImage.getHeight(), reduction),
                                 BufferedImage.TYPE_INT_RGB
                         );
-                resizeImage(originalImage, resizedImage);
+                resizeImage(originalImage, resizedImage, reduction);
 
                 return generateResizedBoard(board, resizedImage);
             } catch (IOException ioException) {
@@ -35,13 +35,13 @@ public class ImageService {
 
     }
 
-    private void resizeImage(BufferedImage originalImage, BufferedImage resizedImage) {
+    private void resizeImage(BufferedImage originalImage, BufferedImage resizedImage, int reduction) {
         Graphics2D graphics2D = resizedImage.createGraphics();
         graphics2D.drawImage(
                 originalImage,
                 0, 0,
-                getReductionSizeBy4InPixels(originalImage.getWidth()),
-                getReductionSizeBy4InPixels(originalImage.getHeight()),
+                getReductionSizeBy4InPixels(originalImage.getWidth(), reduction),
+                getReductionSizeBy4InPixels(originalImage.getHeight(), reduction),
                 null
         );
         graphics2D.dispose();
@@ -53,8 +53,8 @@ public class ImageService {
         return new Board(originalBoard, rezisedImageByteStream.toByteArray());
     }
 
-    private int getReductionSizeBy4InPixels(int originalSize) {
-        return BigDecimal.valueOf(originalSize).divide(BigDecimal.valueOf(4), RoundingMode.DOWN).intValue();
+    private int getReductionSizeBy4InPixels(int originalSize, int reduction) {
+        return BigDecimal.valueOf(originalSize).divide(BigDecimal.valueOf(reduction), RoundingMode.DOWN).intValue();
     }
 
 }
