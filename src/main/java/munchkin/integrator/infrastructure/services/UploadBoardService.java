@@ -4,6 +4,7 @@ import munchkin.integrator.domain.boards.Board;
 import munchkin.integrator.domain.boards.UploadBoard;
 import munchkin.integrator.infrastructure.repositories.BoardRepository;
 import munchkin.integrator.infrastructure.repositories.entities.BoardEntity;
+import org.hibernate.cfg.NotYetImplementedException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -33,5 +34,10 @@ public class UploadBoardService implements UploadBoard {
             return imageService.reziseBoards(allBoards, 10);
         }
         return allBoards;
+    }
+
+    @Override
+    public void cropBoard(long anyString) {
+        throw new NotYetImplementedException();
     }
 }

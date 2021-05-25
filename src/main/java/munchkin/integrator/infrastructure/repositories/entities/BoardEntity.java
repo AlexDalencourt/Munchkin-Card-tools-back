@@ -2,20 +2,20 @@ package munchkin.integrator.infrastructure.repositories.entities;
 
 import munchkin.integrator.domain.boards.Board;
 import munchkin.integrator.domain.boards.Sizing;
+import munchkin.integrator.infrastructure.repositories.generators.ChecksumId;
 import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import static java.util.Objects.requireNonNull;
 
 @Entity(name = "Board")
-public class BoardEntity {
+public class BoardEntity implements ChecksumId {
     @Id
     @GeneratedValue(generator = "checksum-generator")
-    @GenericGenerator(name = "checksum-generator", strategy = "munchkin.integrator.infrastructure.repositories.BoardIdGenerator")
+    @GenericGenerator(name = "checksum-generator", strategy = "munchkin.integrator.infrastructure.repositories.generators.ChecksumIdGenerator")
     private Long checksum;
 
     @Column(columnDefinition = "BLOB")
@@ -24,6 +24,9 @@ public class BoardEntity {
     private int columns;
 
     private int lines;
+
+    @OneToMany(mappedBy = "board")
+    private List<CardPositionEntity> cards = new ArrayList<>();
 
     public BoardEntity() {
     }
@@ -59,7 +62,20 @@ public class BoardEntity {
         return lines;
     }
 
+    public List<CardPositionEntity> getCards() {
+        return cards;
+    }
+
+    public void setCards(List<CardPositionEntity> cards) {
+        this.cards = cards;
+    }
+
     public Board toBoard() {
         return new Board(checksum, new Sizing(columns, lines), image);
+    }
+
+    @Override
+    public byte[] fileToCheckSum() {
+        return this.getImage();
     }
 }

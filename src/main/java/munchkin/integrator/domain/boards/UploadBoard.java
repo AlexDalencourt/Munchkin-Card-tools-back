@@ -7,4 +7,6 @@ public interface UploadBoard {
     boolean uploadNewBoard(Board boardToSave);
 
     List<Board> getAllBoards(boolean resizeImages);
+
+    void cropBoard(long anyString);
 }
