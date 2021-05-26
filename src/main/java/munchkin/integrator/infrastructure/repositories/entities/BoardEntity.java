@@ -1,5 +1,6 @@
 package munchkin.integrator.infrastructure.repositories.entities;
 
+import munchkin.integrator.domain.asset.Image;
 import munchkin.integrator.domain.boards.Board;
 import munchkin.integrator.domain.boards.Sizing;
 import munchkin.integrator.infrastructure.repositories.generators.ChecksumId;
@@ -41,7 +42,7 @@ public class BoardEntity implements ChecksumId {
     public BoardEntity(Board boardToSave) {
         requireNonNull(boardToSave);
         requireNonNull(boardToSave.sizing());
-        this.image = boardToSave.boardImage();
+        this.image = boardToSave.boardImage().image();
         this.columns = boardToSave.sizing().numberOfColumns();
         this.lines = boardToSave.sizing().numberOfLines();
     }
@@ -71,7 +72,7 @@ public class BoardEntity implements ChecksumId {
     }
 
     public Board toBoard() {
-        return new Board(checksum, new Sizing(columns, lines), image);
+        return new Board(checksum, new Sizing(columns, lines), new Image(image));
     }
 
     @Override

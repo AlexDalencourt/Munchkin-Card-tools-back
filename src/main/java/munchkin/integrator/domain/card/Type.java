@@ -1,4 +1,4 @@
-package munchkin.integrator.domain;
+package munchkin.integrator.domain.card;
 
 public enum Type {
     TREASURE,

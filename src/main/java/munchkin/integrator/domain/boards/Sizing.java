@@ -2,9 +2,9 @@ package munchkin.integrator.domain.boards;
 
 import java.util.Objects;
 
-public class Sizing {
-    private int numberOfColumns;
-    private int numberOfLines;
+public final class Sizing {
+    private final int numberOfColumns;
+    private final int numberOfLines;
 
     public Sizing(int numberOfColumns, int numberOfLines) {
         this.numberOfColumns = numberOfColumns;
