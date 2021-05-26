@@ -1,10 +1,15 @@
 package munchkin.integrator.infrastructure.services;
 
+import munchkin.integrator.domain.asset.AssetIndex;
+import munchkin.integrator.domain.asset.Image;
 import munchkin.integrator.domain.boards.Board;
 import munchkin.integrator.domain.boards.Sizing;
+import munchkin.integrator.domain.card.Card;
 import munchkin.integrator.infrastructure.repositories.BoardRepository;
 import munchkin.integrator.infrastructure.repositories.entities.BoardEntity;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -12,9 +17,12 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.MissingResourceException;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -36,7 +44,7 @@ class UploadBoardServiceSould {
     @Test
     public void call_repository_board_instance_to_save_new_board() {
         Board mockBoard = mock(Board.class);
-        doReturn(new byte[0]).when(mockBoard).boardImage();
+        doReturn(new Image(new byte[0])).when(mockBoard).boardImage();
         doReturn(mock(Sizing.class)).when(mockBoard).sizing();
         doReturn(mock(BoardEntity.class)).when(mockBoardRepository).save(any(BoardEntity.class));
 
@@ -53,7 +61,7 @@ class UploadBoardServiceSould {
         Board mockBoard = mock(Board.class);
         byte[] inputImage = "test".getBytes();
         Sizing size = new Sizing(1, 2);
-        doReturn(inputImage).when(mockBoard).boardImage();
+        doReturn(new Image(inputImage)).when(mockBoard).boardImage();
         doReturn(size).when(mockBoard).sizing();
         doReturn(mock(BoardEntity.class)).when(mockBoardRepository).save(any(BoardEntity.class));
 
@@ -71,7 +79,7 @@ class UploadBoardServiceSould {
         Board mockBoard = mock(Board.class);
         byte[] inputImage = "test".getBytes();
         Sizing size = new Sizing(1, 2);
-        doReturn(inputImage).when(mockBoard).boardImage();
+        doReturn(new Image(inputImage)).when(mockBoard).boardImage();
         doReturn(size).when(mockBoard).sizing();
         BoardEntity entityOutput = mock(BoardEntity.class);
         doReturn(entityOutput).when(mockBoardRepository).save(any(BoardEntity.class));
@@ -88,7 +96,7 @@ class UploadBoardServiceSould {
         Board mockBoard = mock(Board.class);
         byte[] inputImage = "test".getBytes();
         Sizing size = new Sizing(1, 2);
-        doReturn(inputImage).when(mockBoard).boardImage();
+        doReturn(new Image(inputImage)).when(mockBoard).boardImage();
         doReturn(size).when(mockBoard).sizing();
         BoardEntity entityOutput = mock(BoardEntity.class);
         doReturn(entityOutput).when(mockBoardRepository).save(any(BoardEntity.class));
@@ -161,9 +169,9 @@ class UploadBoardServiceSould {
         doReturn(boardEntities).when(mockBoardRepository).findAll();
         List<Board> boardsResized =
                 Arrays.asList(
-                        new Board(4L, new Sizing(0, 0), new byte[0]),
-                        new Board(5L, new Sizing(0, 0), new byte[0]),
-                        new Board(6L, new Sizing(0, 0), new byte[0])
+                        new Board(4L, new Sizing(0, 0), new Image(new byte[0])),
+                        new Board(5L, new Sizing(0, 0), new Image(new byte[0])),
+                        new Board(6L, new Sizing(0, 0), new Image(new byte[0]))
                 );
         doReturn(boardsResized).when(mockImageService).reziseBoards(anyList(), eq(10));
 
@@ -171,5 +179,82 @@ class UploadBoardServiceSould {
 
         assertThat(outputBoardList).hasSameElementsAs(boardsResized);
         assertThat(outputBoardList).doesNotContainAnyElementsOf(boardEntities.stream().map(BoardEntity::toBoard).collect(Collectors.toList()));
+    }
+
+    @Test
+    public void retreive_the_board_to_croap() {
+        BoardEntity board = mock(BoardEntity.class);
+        doReturn(Optional.of(board)).when(mockBoardRepository).findById(eq(1L));
+
+        uploadBoardService.cropBoard(1L);
+
+        verify(mockBoardRepository).findById(eq(1L));
+    }
+
+    @Test
+    public void throw_an_missing_data_exeption_when_trying_to_crop_no_exist_board() {
+        doReturn(Optional.empty()).when(mockBoardRepository).findById(eq(0L));
+
+        assertThrows(MissingResourceException.class, () -> uploadBoardService.cropBoard(0L));
+    }
+
+    @ParameterizedTest
+    @CsvSource({"2,3", "1,5", "5,9", "0,1"})
+    public void call_image_crop_service_for_each_card_on_board(int columnSize, int lineSize) {
+        BoardEntity board = mock(BoardEntity.class);
+        doReturn(columnSize).when(board).getColumns();
+        doReturn(lineSize).when(board).getLines();
+        doReturn(new byte[0]).when(board).getImage();
+        doReturn(Optional.of(board)).when(mockBoardRepository).findById(anyLong());
+
+        uploadBoardService.cropBoard(0L);
+
+        verify(mockImageService, times(columnSize * lineSize)).cropImage(anyInt(), anyInt(), any(byte[].class));
+        verifyNoMoreInteractions(mockImageService);
+    }
+
+    @ParameterizedTest
+    @CsvSource({"2,3,IMAGE1", "1,5,IMAGE2", "5,9,IMAGE3", "1,1,IMAGE4"})
+    public void call_image_crop_service_for_each_card_on_boar_with_good_params(int columnSize, int lineSize, String image) {
+        BoardEntity board = mock(BoardEntity.class);
+        doReturn(columnSize).when(board).getColumns();
+        doReturn(lineSize).when(board).getLines();
+        doReturn(image.getBytes()).when(board).getImage();
+        doReturn(Optional.of(board)).when(mockBoardRepository).findById(anyLong());
+
+        uploadBoardService.cropBoard(0L);
+
+        for (int column = 0; column < columnSize; column++) {
+            for (int line = 0; line < lineSize; line++) {
+                verify(mockImageService).cropImage(eq(column), eq(line), eq(image.getBytes()));
+            }
+        }
+        verifyNoMoreInteractions(mockImageService);
+    }
+
+    @ParameterizedTest
+    @CsvSource({"2,3,IMAGE1", "1,5,IMAGE2", "5,9,IMAGE3", "1,1,IMAGE4"})
+    public void return_board_with_croped_images_returned_from_crop_service(int columnSize, int lineSize, String image) {
+        BoardEntity originalBoard = mock(BoardEntity.class);
+        doReturn(columnSize).when(originalBoard).getColumns();
+        doReturn(lineSize).when(originalBoard).getLines();
+        doReturn(image.getBytes()).when(originalBoard).getImage();
+        doReturn(new Image(image.getBytes())).when(mockImageService).cropImage(anyInt(), anyInt(), any(byte[].class));
+
+        Board boardWithCropImages = uploadBoardService.cropBoard(0L);
+
+        assertThat(boardWithCropImages.cards()).hasSize(columnSize * lineSize);
+        for (int column = 0; column < columnSize; column++) {
+            for (int line = 0; line < lineSize; line++) {
+                int finalColumn = column;
+                int finalLine = line;
+                Optional<Card> foundCard =
+                        boardWithCropImages.cards().stream()
+                                .filter(card -> card.cardAsset().index().equals(new AssetIndex(finalColumn, finalLine)))
+                                .findFirst();
+                assertThat(foundCard).isPresent();
+                assertThat(foundCard.get().cardAsset().image()).isEqualTo(new Image(image.getBytes()));
+            }
+        }
     }
 }

@@ -1,9 +1,10 @@
 package munchkin.integrator.infrastructure.rest;
 
-import munchkin.integrator.domain.Type;
+import munchkin.integrator.domain.asset.Image;
 import munchkin.integrator.domain.boards.Board;
 import munchkin.integrator.domain.boards.Sizing;
 import munchkin.integrator.domain.boards.UploadBoard;
+import munchkin.integrator.domain.card.Type;
 import munchkin.integrator.infrastructure.rest.responses.BoardResponseLight;
 import munchkin.integrator.infrastructure.rest.responses.BoardResponseWithResource;
 import org.springframework.http.InvalidMediaTypeException;
@@ -38,7 +39,7 @@ public class AssetController {
         if (numberOfColumns <= 0 || numberOfLines <= 0 || boardType == null) {
             throw new IllegalArgumentException("Number of columns and lines should be positive and superior to 0, and board type must be valid");
         }
-        if (!boardUploadingService.uploadNewBoard(new Board(null, new Sizing(numberOfColumns, numberOfLines), file.getBytes()))) {
+        if (!boardUploadingService.uploadNewBoard(new Board(null, new Sizing(numberOfColumns, numberOfLines), new Image(file.getBytes())))) {
             throw new ResponseStatusException(INTERNAL_SERVER_ERROR);
         }
     }

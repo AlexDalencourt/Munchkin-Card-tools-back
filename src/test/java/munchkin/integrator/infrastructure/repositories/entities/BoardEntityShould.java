@@ -14,7 +14,7 @@ class BoardEntityShould {
         Board outputMapped = entity.toBoard();
 
         assertThat(outputMapped.boardId()).isEqualTo(entity.getChecksum());
-        assertThat(outputMapped.boardImage()).isEqualTo(entity.getImage());
+        assertThat(outputMapped.boardImage().image()).isEqualTo(entity.getImage());
         assertThat(outputMapped.sizing().numberOfColumns()).isEqualTo(entity.getColumns());
         assertThat(outputMapped.sizing().numberOfLines()).isEqualTo(entity.getLines());
     }

@@ -4,9 +4,10 @@ import munchkin.integrator.domain.boards.Board;
 import munchkin.integrator.domain.boards.UploadBoard;
 import munchkin.integrator.infrastructure.repositories.BoardRepository;
 import munchkin.integrator.infrastructure.repositories.entities.BoardEntity;
-import org.hibernate.cfg.NotYetImplementedException;
 
 import java.util.List;
+import java.util.MissingResourceException;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
@@ -37,7 +38,14 @@ public class UploadBoardService implements UploadBoard {
     }
 
     @Override
-    public void cropBoard(long anyString) {
-        throw new NotYetImplementedException();
+    public Board cropBoard(long boardId) {
+        Optional<BoardEntity> boardResult = boardRepository.findById(boardId);
+        BoardEntity board = boardResult.orElseThrow(() -> new MissingResourceException("Board not exist", "Board", ((Long) boardId).toString()));
+        for (int column = 0; column < board.getColumns(); column++) {
+            for (int line = 0; line < board.getLines(); line++) {
+                imageService.cropImage(column, line, board.getImage());
+            }
+        }
+        return null;
     }
 }

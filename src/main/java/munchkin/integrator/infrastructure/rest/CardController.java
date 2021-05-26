@@ -1,7 +1,7 @@
 package munchkin.integrator.infrastructure.rest;
 
-import munchkin.integrator.domain.Type;
 import munchkin.integrator.domain.boards.UploadBoard;
+import munchkin.integrator.domain.card.Type;
 import org.springframework.web.bind.annotation.*;
 
 import static java.util.Objects.requireNonNull;

@@ -1,10 +1,11 @@
 package munchkin.integrator.infrastructure.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import munchkin.integrator.domain.Type;
+import munchkin.integrator.domain.asset.Image;
 import munchkin.integrator.domain.boards.Board;
 import munchkin.integrator.domain.boards.Sizing;
 import munchkin.integrator.domain.boards.UploadBoard;
+import munchkin.integrator.domain.card.Type;
 import munchkin.integrator.infrastructure.rest.responses.BoardResponseLight;
 import munchkin.integrator.infrastructure.rest.responses.BoardResponseWithResource;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,7 +31,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
-import static munchkin.integrator.domain.Type.DUNGEON;
+import static munchkin.integrator.domain.card.Type.DUNGEON;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -187,7 +188,7 @@ class AssetControllerBoardBehaviourShould {
         verifyNoMoreInteractions(boardUploadingService);
 
         Board capturedBoard = boardCaptor.getValue();
-        assertThat(capturedBoard.boardImage()).isEqualTo(mockMultipartFileCard.getBytes());
+        assertThat(capturedBoard.boardImage()).isEqualTo(new Image(mockMultipartFileCard.getBytes()));
         assertThat(capturedBoard.sizing().numberOfColumns()).isEqualTo(2);
         assertThat(capturedBoard.sizing().numberOfLines()).isEqualTo(1);
     }
@@ -235,7 +236,7 @@ class AssetControllerBoardBehaviourShould {
     public void return_mapped_output_for_each_result_of_get_all_board_with_variable_size(int numberOfResults) throws Exception {
         List<Board> allBoardServiceResults = new ArrayList<>();
         for (long index = 0; index < numberOfResults; index++) {
-            allBoardServiceResults.add(new Board(index, new Sizing(1, 2), cardImage.getInputStream().readAllBytes()));
+            allBoardServiceResults.add(new Board(index, new Sizing(1, 2), new Image(cardImage.getInputStream().readAllBytes())));
         }
         doReturn(allBoardServiceResults).when(boardUploadingService).getAllBoards(anyBoolean());
 
@@ -261,7 +262,7 @@ class AssetControllerBoardBehaviourShould {
     public void return_mapped_output_for_each_result_of_get_all_board_full_with_variable_size(int numberOfResults) throws Exception {
         List<Board> allBoardServiceResults = new ArrayList<>();
         for (long index = 0; index < numberOfResults; index++) {
-            allBoardServiceResults.add(new Board(index, new Sizing(1, 2), cardImage.getInputStream().readAllBytes()));
+            allBoardServiceResults.add(new Board(index, new Sizing(1, 2), new Image(cardImage.getInputStream().readAllBytes())));
         }
         doReturn(allBoardServiceResults).when(boardUploadingService).getAllBoards(anyBoolean());
 
@@ -277,7 +278,7 @@ class AssetControllerBoardBehaviourShould {
                                 board.boardId().equals(response.getBoardId())
                                         && board.sizing().numberOfLines() == response.getSizing().getNumberOfLines()
                                         && board.sizing().numberOfColumns() == response.getSizing().getNumberOfLines()
-                                        && board.boardImage() == response.getImage()
+                                        && board.boardImage().equals(new Image(response.getImage()))
                         )
                 ).collect(Collectors.toList())
         ).hasSize(numberOfResults));

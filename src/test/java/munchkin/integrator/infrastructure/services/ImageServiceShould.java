@@ -1,5 +1,6 @@
 package munchkin.integrator.infrastructure.services;
 
+import munchkin.integrator.domain.asset.Image;
 import munchkin.integrator.domain.boards.Board;
 import munchkin.integrator.domain.boards.Sizing;
 import org.junit.jupiter.api.Test;
@@ -56,7 +57,7 @@ class ImageServiceShould {
     public void resize_boards_iterate_on_all_images() throws IOException {
         Board mockImage = mock(Board.class);
         List<Board> images = Arrays.asList(mockImage, mockImage, mockImage);
-        doReturn(card.getInputStream().readAllBytes()).when(mockImage).boardImage();
+        doReturn(new Image(card.getInputStream().readAllBytes())).when(mockImage).boardImage();
 
         imageService.reziseBoards(images, 25);
 
@@ -67,23 +68,23 @@ class ImageServiceShould {
     public void resize_boards_return_new_byte_image_from_original_image() throws IOException {
         Board mockImage = mock(Board.class);
         byte[] image = card.getInputStream().readAllBytes();
-        doReturn(image).when(mockImage).boardImage();
+        doReturn(new Image(image)).when(mockImage).boardImage();
         List<Board> images = Arrays.asList(mockImage, mockImage, mockImage);
 
         List<Board> resultBoards = imageService.reziseBoards(images, 25);
 
         assertThat(resultBoards).hasSameSizeAs(images);
-        resultBoards.forEach(board -> assertThat(board.boardImage()).isNotEqualTo(image));
+        resultBoards.forEach(board -> assertThat(board.boardImage().image()).isNotEqualTo(image));
     }
 
     @Test
     public void resize_boards_should_return_same_image_at_25_percent_size() throws IOException {
-        List<Board> images = Collections.singletonList(new Board(0L, new Sizing(1, 1), card.getInputStream().readAllBytes()));
+        List<Board> images = Collections.singletonList(new Board(0L, new Sizing(1, 1), new Image(card.getInputStream().readAllBytes())));
         BufferedImage expectedImage = ImageIO.read(card25Percent.getInputStream());
 
         List<Board> resultBoards = imageService.reziseBoards(images, 4);
 
-        BufferedImage generatedImage = ImageIO.read(new ByteArrayInputStream(resultBoards.get(0).boardImage()));
+        BufferedImage generatedImage = ImageIO.read(new ByteArrayInputStream(resultBoards.get(0).boardImage().image()));
         assertThat(generatedImage.getWidth()).isEqualTo(expectedImage.getWidth());
         assertThat(generatedImage.getHeight()).isEqualTo(expectedImage.getHeight());
     }
@@ -91,12 +92,12 @@ class ImageServiceShould {
     @ParameterizedTest
     @MethodSource("parameterizedReductionSource")
     public void resize_boards_should_be_reduction_parameterized(int reduction, Resource resizedCard) throws IOException {
-        List<Board> images = Collections.singletonList(new Board(0L, new Sizing(1, 1), card.getInputStream().readAllBytes()));
+        List<Board> images = Collections.singletonList(new Board(0L, new Sizing(1, 1), new Image(card.getInputStream().readAllBytes())));
         BufferedImage expectedImage = ImageIO.read(resizedCard.getInputStream());
 
         List<Board> resultBoards = imageService.reziseBoards(images, reduction);
 
-        BufferedImage generatedImage = ImageIO.read(new ByteArrayInputStream(resultBoards.get(0).boardImage()));
+        BufferedImage generatedImage = ImageIO.read(new ByteArrayInputStream(resultBoards.get(0).boardImage().image()));
         assertThat(generatedImage.getWidth()).isEqualTo(expectedImage.getWidth());
         assertThat(generatedImage.getHeight()).isEqualTo(expectedImage.getHeight());
     }
@@ -112,12 +113,12 @@ class ImageServiceShould {
     @ParameterizedTest
     @MethodSource("parameterizedFileTypeMatch")
     public void reziseBoards_should_conserve_original_file_extension(Resource inputImage) throws IOException {
-        List<Board> images = Collections.singletonList(new Board(0L, new Sizing(1, 1), inputImage.getInputStream().readAllBytes()));
+        List<Board> images = Collections.singletonList(new Board(0L, new Sizing(1, 1), new Image(inputImage.getInputStream().readAllBytes())));
         Iterator<ImageReader> expectedImageReader = ImageIO.getImageReaders(ImageIO.createImageInputStream(inputImage.getInputStream()));
 
         List<Board> resultBoards = imageService.reziseBoards(images, 25);
 
-        Iterator<ImageReader> generatedImageReader = ImageIO.getImageReaders(ImageIO.createImageInputStream(new ByteArrayInputStream(resultBoards.get(0).boardImage())));
+        Iterator<ImageReader> generatedImageReader = ImageIO.getImageReaders(ImageIO.createImageInputStream(new ByteArrayInputStream(resultBoards.get(0).boardImage().image())));
         assertThat(generatedImageReader.next().getFormatName()).isEqualTo(expectedImageReader.next().getFormatName());
     }
 

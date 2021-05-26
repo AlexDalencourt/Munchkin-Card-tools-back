@@ -1,6 +1,8 @@
 package munchkin.integrator.infrastructure.services;
 
+import munchkin.integrator.domain.asset.Image;
 import munchkin.integrator.domain.boards.Board;
+import org.hibernate.cfg.NotYetImplementedException;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -21,7 +23,7 @@ public class ImageService {
     public List<Board> reziseBoards(List<Board> boards, final int reduction) {
         return boards.stream().map(board -> {
             try (
-                    ByteArrayInputStream inputImageByteStream = new ByteArrayInputStream(board.boardImage())
+                    ByteArrayInputStream inputImageByteStream = new ByteArrayInputStream(board.boardImage().image())
             ) {
                 ImageInputStream inputImageStream = ImageIO.createImageInputStream(inputImageByteStream);
 
@@ -65,11 +67,14 @@ public class ImageService {
     private Board generateResizedBoard(Board originalBoard, BufferedImage resizedImage, String fileFormat) throws IOException {
         ByteArrayOutputStream rezisedImageByteStream = new ByteArrayOutputStream();
         ImageIO.write(resizedImage, fileFormat, rezisedImageByteStream);
-        return new Board(originalBoard, rezisedImageByteStream.toByteArray());
+        return new Board(originalBoard, new Image(rezisedImageByteStream.toByteArray()));
     }
 
     private int getReductionSizeBy4InPixels(int originalSize, int reduction) {
         return BigDecimal.valueOf(originalSize).divide(BigDecimal.valueOf(reduction), RoundingMode.DOWN).intValue();
     }
 
+    public void cropImage(int columnIndex, int lineIndex, byte[] originalImage) {
+        throw new NotYetImplementedException();
+    }
 }

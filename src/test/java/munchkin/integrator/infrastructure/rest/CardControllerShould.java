@@ -1,8 +1,8 @@
 package munchkin.integrator.infrastructure.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import munchkin.integrator.domain.Type;
 import munchkin.integrator.domain.boards.UploadBoard;
+import munchkin.integrator.domain.card.Type;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;

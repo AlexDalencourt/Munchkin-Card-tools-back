@@ -17,7 +17,7 @@ public class BoardResponseWithResource implements Serializable {
     public BoardResponseWithResource(Board baseBoard) {
         this.boardId = baseBoard.boardId();
         this.sizing = new SizingResponse(baseBoard.sizing());
-        this.image = baseBoard.boardImage();
+        this.image = baseBoard.boardImage().image();
     }
 
     public Long getBoardId() {
