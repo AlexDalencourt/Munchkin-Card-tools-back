@@ -24,7 +24,7 @@ public class CardController {
         if (boardId == null) {
             throw new IllegalArgumentException("boardId null");
         }
-        boardUploadingService.cropBoard(boardId);
+        boardUploadingService.cropBoard(boardId, false);
     }
 
     public CardController(UploadBoard uploadBoard) {

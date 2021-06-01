@@ -50,7 +50,7 @@ class CardControllerShould {
 
     @Test
     public void reject_crop_cards_when_board_requested_not_exist() throws Exception {
-        doThrow(new MissingResourceException("No board found", "Board", "1")).when(boardUploadingService).cropBoard(eq(1L));
+        doThrow(new MissingResourceException("No board found", "Board", "1")).when(boardUploadingService).cropBoard(eq(1L), eq(false));
         mvc.perform(put("/cards/crop").param("boardId", "1")).andExpect(status().isNotFound());
     }
 
@@ -58,7 +58,7 @@ class CardControllerShould {
     public void ask_crop_on_board_when_all_params_is_good() throws Exception {
         mvc.perform(put("/cards/crop").param("boardId", "1"));
 
-        verify(boardUploadingService).cropBoard(eq(1L));
+        verify(boardUploadingService).cropBoard(eq(1L), eq(false));
     }
 
     @Test

@@ -1,33 +1,50 @@
 package munchkin.integrator.infrastructure.repositories.entities;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
+import munchkin.integrator.domain.card.Card;
+
+import javax.persistence.*;
+import java.io.Serial;
+import java.io.Serializable;
+
+import static java.util.Objects.requireNonNull;
 
 @Entity(name = "CardPositionInBoard")
-public class CardPositionEntity {
+public class CardPositionEntity implements Serializable {
 
+    @Serial
+    private static final long serialVersionUID = -8966850552082564611L;
+    //    @Id
+//    private Long cardId;
     @Id
-    private Long cardId;
+    @MapsId
+    @OneToOne
+    private CardEntity card;
 
     private int column;
 
     private int line;
 
-    @OneToOne
-    private CardEntity card;
 
     @ManyToOne
     private BoardEntity board;
 
-    public Long getCardId() {
-        return cardId;
+    public CardPositionEntity() {
     }
 
-    public void setCardId(Long cardId) {
-        this.cardId = cardId;
+    public CardPositionEntity(Card card) {
+        requireNonNull(card);
+        this.column = card.cardAsset().index().column();
+        this.line = card.cardAsset().index().line();
+        this.card = new CardEntity(card);
     }
+
+//    public Long getCardId() {
+//        return cardId;
+//    }
+//
+//    public void setCardId(Long cardId) {
+//        this.cardId = cardId;
+//    }
 
     public int getColumn() {
         return column;

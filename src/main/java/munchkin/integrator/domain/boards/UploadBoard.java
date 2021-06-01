@@ -8,5 +8,5 @@ public interface UploadBoard {
 
     List<Board> getAllBoards(boolean resizeImages);
 
-    Board cropBoard(long anyString);
+    Board cropBoard(long boardId, boolean persistCropsCards);
 }

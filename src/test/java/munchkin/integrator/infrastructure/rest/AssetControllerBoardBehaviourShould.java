@@ -5,6 +5,7 @@ import munchkin.integrator.domain.asset.Image;
 import munchkin.integrator.domain.boards.Board;
 import munchkin.integrator.domain.boards.Sizing;
 import munchkin.integrator.domain.boards.UploadBoard;
+import munchkin.integrator.domain.card.Card;
 import munchkin.integrator.domain.card.Type;
 import munchkin.integrator.infrastructure.rest.responses.BoardResponseLight;
 import munchkin.integrator.infrastructure.rest.responses.BoardResponseWithResource;
@@ -236,7 +237,7 @@ class AssetControllerBoardBehaviourShould {
     public void return_mapped_output_for_each_result_of_get_all_board_with_variable_size(int numberOfResults) throws Exception {
         List<Board> allBoardServiceResults = new ArrayList<>();
         for (long index = 0; index < numberOfResults; index++) {
-            allBoardServiceResults.add(new Board(index, new Sizing(1, 2), new Image(cardImage.getInputStream().readAllBytes())));
+            allBoardServiceResults.add(new Board(index, new Sizing(1, 2), new Image(cardImage.getInputStream().readAllBytes()), new ArrayList<Card>()));
         }
         doReturn(allBoardServiceResults).when(boardUploadingService).getAllBoards(anyBoolean());
 
@@ -262,7 +263,7 @@ class AssetControllerBoardBehaviourShould {
     public void return_mapped_output_for_each_result_of_get_all_board_full_with_variable_size(int numberOfResults) throws Exception {
         List<Board> allBoardServiceResults = new ArrayList<>();
         for (long index = 0; index < numberOfResults; index++) {
-            allBoardServiceResults.add(new Board(index, new Sizing(1, 2), new Image(cardImage.getInputStream().readAllBytes())));
+            allBoardServiceResults.add(new Board(index, new Sizing(1, 2), new Image(cardImage.getInputStream().readAllBytes()), new ArrayList<Card>()));
         }
         doReturn(allBoardServiceResults).when(boardUploadingService).getAllBoards(anyBoolean());
 

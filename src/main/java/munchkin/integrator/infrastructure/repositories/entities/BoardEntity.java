@@ -3,6 +3,7 @@ package munchkin.integrator.infrastructure.repositories.entities;
 import munchkin.integrator.domain.asset.Image;
 import munchkin.integrator.domain.boards.Board;
 import munchkin.integrator.domain.boards.Sizing;
+import munchkin.integrator.domain.card.Card;
 import munchkin.integrator.infrastructure.repositories.generators.ChecksumId;
 import org.hibernate.annotations.GenericGenerator;
 
@@ -27,24 +28,31 @@ public class BoardEntity implements ChecksumId {
     private int lines;
 
     @OneToMany(mappedBy = "board")
-    private List<CardPositionEntity> cards = new ArrayList<>();
+    private final List<CardPositionEntity> cards = new ArrayList<>();
 
     public BoardEntity() {
     }
 
-    public BoardEntity(Long checksum, byte[] image, int columns, int lines) {
+    public BoardEntity(Long checksum, byte[] image, int columns, int lines, List<CardPositionEntity> cards) {
         this.checksum = checksum;
         this.image = image;
         this.columns = columns;
         this.lines = lines;
+        if (cards != null) {
+            this.cards.addAll(cards);
+        }
     }
 
     public BoardEntity(Board boardToSave) {
         requireNonNull(boardToSave);
         requireNonNull(boardToSave.sizing());
+        this.checksum = boardToSave.boardId();
         this.image = boardToSave.boardImage().image();
         this.columns = boardToSave.sizing().numberOfColumns();
         this.lines = boardToSave.sizing().numberOfLines();
+        for (Card card : boardToSave.cards()) {
+            this.cards.add(new CardPositionEntity(card));
+        }
     }
 
     public Long getChecksum() {
@@ -67,12 +75,8 @@ public class BoardEntity implements ChecksumId {
         return cards;
     }
 
-    public void setCards(List<CardPositionEntity> cards) {
-        this.cards = cards;
-    }
-
     public Board toBoard() {
-        return new Board(checksum, new Sizing(columns, lines), new Image(image));
+        return new Board(checksum, new Sizing(columns, lines), new Image(image), new ArrayList<Card>());
     }
 
     @Override

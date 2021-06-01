@@ -2,7 +2,7 @@ package munchkin.integrator.infrastructure.services;
 
 import munchkin.integrator.domain.asset.Image;
 import munchkin.integrator.domain.boards.Board;
-import org.hibernate.cfg.NotYetImplementedException;
+import munchkin.integrator.domain.boards.Sizing;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -13,6 +13,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.Iterator;
 import java.util.List;
@@ -74,7 +75,21 @@ public class ImageService {
         return BigDecimal.valueOf(originalSize).divide(BigDecimal.valueOf(reduction), RoundingMode.DOWN).intValue();
     }
 
-    public void cropImage(int columnIndex, int lineIndex, byte[] originalImage) {
-        throw new NotYetImplementedException();
+    public byte[] cropImage(int columnIndex, int lineIndex, byte[] originalImage, Sizing originalSize) {
+        try (
+                ByteArrayInputStream inputStream = new ByteArrayInputStream(originalImage);
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream()
+        ) {
+            BufferedImage inputImage = ImageIO.read(inputStream);
+            int width = inputImage.getWidth();
+            int height = inputImage.getHeight();
+            int cardWidth = BigInteger.valueOf(width).divide(BigInteger.valueOf(originalSize.numberOfColumns())).intValue();
+            int cardHeight = BigInteger.valueOf(height).divide(BigInteger.valueOf(originalSize.numberOfLines())).intValue();
+            BufferedImage outputImage = inputImage.getSubimage(columnIndex * cardWidth, lineIndex * cardHeight, (columnIndex + 1) * cardWidth, (lineIndex + 1) * cardHeight);
+            ImageIO.write(outputImage, getImageFileFormat(ImageIO.createImageInputStream(inputStream)), outputStream);
+            return outputStream.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

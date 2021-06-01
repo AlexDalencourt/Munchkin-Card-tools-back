@@ -3,6 +3,7 @@ package munchkin.integrator.infrastructure.services;
 import munchkin.integrator.domain.asset.Image;
 import munchkin.integrator.domain.boards.Board;
 import munchkin.integrator.domain.boards.Sizing;
+import munchkin.integrator.domain.card.Card;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -18,13 +19,11 @@ import javax.imageio.ImageReader;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.mockito.Mockito.*;
 
@@ -79,7 +78,7 @@ class ImageServiceShould {
 
     @Test
     public void resize_boards_should_return_same_image_at_25_percent_size() throws IOException {
-        List<Board> images = Collections.singletonList(new Board(0L, new Sizing(1, 1), new Image(card.getInputStream().readAllBytes())));
+        List<Board> images = Collections.singletonList(new Board(0L, new Sizing(1, 1), new Image(card.getInputStream().readAllBytes()), new ArrayList<Card>()));
         BufferedImage expectedImage = ImageIO.read(card25Percent.getInputStream());
 
         List<Board> resultBoards = imageService.reziseBoards(images, 4);
@@ -92,7 +91,7 @@ class ImageServiceShould {
     @ParameterizedTest
     @MethodSource("parameterizedReductionSource")
     public void resize_boards_should_be_reduction_parameterized(int reduction, Resource resizedCard) throws IOException {
-        List<Board> images = Collections.singletonList(new Board(0L, new Sizing(1, 1), new Image(card.getInputStream().readAllBytes())));
+        List<Board> images = Collections.singletonList(new Board(0L, new Sizing(1, 1), new Image(card.getInputStream().readAllBytes()), new ArrayList<Card>()));
         BufferedImage expectedImage = ImageIO.read(resizedCard.getInputStream());
 
         List<Board> resultBoards = imageService.reziseBoards(images, reduction);
@@ -113,7 +112,7 @@ class ImageServiceShould {
     @ParameterizedTest
     @MethodSource("parameterizedFileTypeMatch")
     public void reziseBoards_should_conserve_original_file_extension(Resource inputImage) throws IOException {
-        List<Board> images = Collections.singletonList(new Board(0L, new Sizing(1, 1), new Image(inputImage.getInputStream().readAllBytes())));
+        List<Board> images = Collections.singletonList(new Board(0L, new Sizing(1, 1), new Image(inputImage.getInputStream().readAllBytes()), new ArrayList<Card>()));
         Iterator<ImageReader> expectedImageReader = ImageIO.getImageReaders(ImageIO.createImageInputStream(inputImage.getInputStream()));
 
         List<Board> resultBoards = imageService.reziseBoards(images, 25);
@@ -128,5 +127,10 @@ class ImageServiceShould {
                 card,
                 cardPng
         );
+    }
+
+    @Test
+    public void crop_image_for_different_positions(Resource inputImage, Resource outputImage, int column, int line) throws IOException {
+        fail();
     }
 }

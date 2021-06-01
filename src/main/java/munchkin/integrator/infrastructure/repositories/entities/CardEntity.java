@@ -1,5 +1,6 @@
 package munchkin.integrator.infrastructure.repositories.entities;
 
+import munchkin.integrator.domain.card.Card;
 import munchkin.integrator.infrastructure.repositories.generators.ChecksumId;
 import org.hibernate.annotations.GenericGenerator;
 
@@ -7,9 +8,16 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import java.io.Serial;
+import java.io.Serializable;
+
+import static java.util.Objects.requireNonNull;
 
 @Entity(name = "Card")
-public class CardEntity implements ChecksumId {
+public class CardEntity implements ChecksumId, Serializable {
+
+    @Serial
+    private static final long serialVersionUID = -7299753468531526190L;
 
     @Id
     @GeneratedValue(generator = "checksum-generator")
@@ -20,7 +28,15 @@ public class CardEntity implements ChecksumId {
     private byte[] image;
 
     @Column(columnDefinition = "integer default 0")
-    private int version;
+    private Integer version;
+
+    public CardEntity() {
+    }
+
+    public CardEntity(Card card) {
+        requireNonNull(card);
+        this.image = card.cardAsset().image().image();
+    }
 
     public Long getChecksum() {
         return checksum;

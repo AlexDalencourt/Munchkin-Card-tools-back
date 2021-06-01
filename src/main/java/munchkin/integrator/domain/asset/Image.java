@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 import static java.util.Objects.requireNonNull;
 
-public class Image {
+public final class Image {
     private final byte[] image;
 
     public Image(final byte[] image) {

@@ -4,6 +4,7 @@ import munchkin.integrator.domain.asset.Image;
 import munchkin.integrator.domain.boards.Board;
 import munchkin.integrator.domain.boards.Sizing;
 import munchkin.integrator.domain.boards.UploadBoard;
+import munchkin.integrator.domain.card.Card;
 import munchkin.integrator.domain.card.Type;
 import munchkin.integrator.infrastructure.rest.responses.BoardResponseLight;
 import munchkin.integrator.infrastructure.rest.responses.BoardResponseWithResource;
@@ -15,6 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 import javax.imageio.ImageIO;
 import javax.websocket.server.PathParam;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -39,7 +41,7 @@ public class AssetController {
         if (numberOfColumns <= 0 || numberOfLines <= 0 || boardType == null) {
             throw new IllegalArgumentException("Number of columns and lines should be positive and superior to 0, and board type must be valid");
         }
-        if (!boardUploadingService.uploadNewBoard(new Board(null, new Sizing(numberOfColumns, numberOfLines), new Image(file.getBytes())))) {
+        if (!boardUploadingService.uploadNewBoard(new Board(null, new Sizing(numberOfColumns, numberOfLines), new Image(file.getBytes()), new ArrayList<Card>()))) {
             throw new ResponseStatusException(INTERNAL_SERVER_ERROR);
         }
     }

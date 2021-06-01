@@ -1,7 +1,11 @@
 package munchkin.integrator.infrastructure.services;
 
+import munchkin.integrator.domain.asset.Asset;
+import munchkin.integrator.domain.asset.AssetIndex;
+import munchkin.integrator.domain.asset.Image;
 import munchkin.integrator.domain.boards.Board;
 import munchkin.integrator.domain.boards.UploadBoard;
+import munchkin.integrator.domain.card.Card;
 import munchkin.integrator.infrastructure.repositories.BoardRepository;
 import munchkin.integrator.infrastructure.repositories.entities.BoardEntity;
 
@@ -38,14 +42,19 @@ public class UploadBoardService implements UploadBoard {
     }
 
     @Override
-    public Board cropBoard(long boardId) {
+    public Board cropBoard(long boardId, boolean persistCropsCards) {
         Optional<BoardEntity> boardResult = boardRepository.findById(boardId);
         BoardEntity board = boardResult.orElseThrow(() -> new MissingResourceException("Board not exist", "Board", ((Long) boardId).toString()));
+        Board mappedBoard = board.toBoard();
         for (int column = 0; column < board.getColumns(); column++) {
             for (int line = 0; line < board.getLines(); line++) {
-                imageService.cropImage(column, line, board.getImage());
+                byte[] cropedImage = imageService.cropImage(column, line, board.getImage(), mappedBoard.sizing());
+                mappedBoard.addCard(new Card(new Asset(new Image(cropedImage), new AssetIndex(column, line))));
             }
         }
-        return null;
+        if (persistCropsCards) {
+            boardRepository.save(new BoardEntity(mappedBoard));
+        }
+        return mappedBoard;
     }
 }
