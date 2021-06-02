@@ -183,6 +183,8 @@ class UploadBoardServiceSould {
     public void retreive_the_board_to_croap() {
         BoardEntity board = mock(BoardEntity.class);
         doReturn(Optional.of(board)).when(mockBoardRepository).findById(eq(1L));
+        Board mockBoard = mock(Board.class);
+        doReturn(mockBoard).when(board).toBoard();
 
         uploadBoardService.cropBoard(1L, false);
 
@@ -240,20 +242,20 @@ class UploadBoardServiceSould {
 
     @ParameterizedTest
     @CsvSource({"2,3,IMAGE1", "1,5,IMAGE2", "5,9,IMAGE3", "1,1,IMAGE4"})
-    public void return_board_with_croped_images_returned_from_crop_service(int columnSize, int lineSize, String image) {
+    public void return_list_of_cards_with_croped_images_returned_from_crop_service(int columnSize, int lineSize, String image) {
         BoardEntity originalBoard = new BoardEntity(1L, image.getBytes(), columnSize, lineSize, null);
         doReturn(image.getBytes()).when(mockImageService).cropImage(anyInt(), anyInt(), any(byte[].class), any(Sizing.class));
         doReturn(Optional.of(originalBoard)).when(mockBoardRepository).findById(anyLong());
 
-        Board boardWithCropImages = uploadBoardService.cropBoard(1L, false);
+        List<Card> cardsWithCropImages = uploadBoardService.cropBoard(1L, false);
 
-        assertThat(boardWithCropImages.cards()).hasSize(columnSize * lineSize);
+        assertThat(cardsWithCropImages).hasSize(columnSize * lineSize);
         for (int column = 0; column < columnSize; column++) {
             for (int line = 0; line < lineSize; line++) {
                 int finalColumn = column;
                 int finalLine = line;
                 Optional<Card> foundCard =
-                        boardWithCropImages.cards().stream()
+                        cardsWithCropImages.stream()
                                 .filter(card -> card.cardAsset().index().equals(new AssetIndex(finalColumn, finalLine)))
                                 .findFirst();
                 assertThat(foundCard).isPresent();

@@ -7,8 +7,8 @@ import munchkin.integrator.domain.boards.Sizing;
 import munchkin.integrator.domain.boards.UploadBoard;
 import munchkin.integrator.domain.card.Card;
 import munchkin.integrator.domain.card.Type;
-import munchkin.integrator.infrastructure.rest.responses.BoardResponseLight;
-import munchkin.integrator.infrastructure.rest.responses.BoardResponseWithResource;
+import munchkin.integrator.infrastructure.rest.responses.boards.BoardResponseLight;
+import munchkin.integrator.infrastructure.rest.responses.boards.BoardResponseWithResource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -242,7 +242,6 @@ class AssetControllerBoardBehaviourShould {
         doReturn(allBoardServiceResults).when(boardUploadingService).getAllBoards(anyBoolean());
 
         String outputAsJson = mvc.perform(get(URL_UPLOAD_BOARD)).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-        System.out.println(outputAsJson);
         BoardResponseLight[] responseLight = jsonMapper.readValue(outputAsJson, BoardResponseLight[].class);
 
         assertThat(responseLight).isNotNull();

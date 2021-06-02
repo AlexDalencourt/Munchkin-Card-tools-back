@@ -42,7 +42,7 @@ public class UploadBoardService implements UploadBoard {
     }
 
     @Override
-    public Board cropBoard(long boardId, boolean persistCropsCards) {
+    public List<Card> cropBoard(long boardId, boolean persistCropsCards) {
         Optional<BoardEntity> boardResult = boardRepository.findById(boardId);
         BoardEntity board = boardResult.orElseThrow(() -> new MissingResourceException("Board not exist", "Board", ((Long) boardId).toString()));
         Board mappedBoard = board.toBoard();
@@ -55,6 +55,6 @@ public class UploadBoardService implements UploadBoard {
         if (persistCropsCards) {
             boardRepository.save(new BoardEntity(mappedBoard));
         }
-        return mappedBoard;
+        return mappedBoard.cards();
     }
 }

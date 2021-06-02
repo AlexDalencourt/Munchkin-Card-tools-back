@@ -1,4 +1,4 @@
-package munchkin.integrator.infrastructure.rest.responses;
+package munchkin.integrator.infrastructure.rest.responses.boards;
 
 import munchkin.integrator.domain.boards.Board;
 

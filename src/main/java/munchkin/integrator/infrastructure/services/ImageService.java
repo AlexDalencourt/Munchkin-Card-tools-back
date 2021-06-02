@@ -80,13 +80,15 @@ public class ImageService {
                 ByteArrayInputStream inputStream = new ByteArrayInputStream(originalImage);
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream()
         ) {
-            BufferedImage inputImage = ImageIO.read(inputStream);
+            ImageInputStream inputImageStream = ImageIO.createImageInputStream(inputStream);
+            String imageType = getImageFileFormat(inputImageStream);
+            BufferedImage inputImage = ImageIO.read(inputImageStream);
             int width = inputImage.getWidth();
             int height = inputImage.getHeight();
             int cardWidth = BigInteger.valueOf(width).divide(BigInteger.valueOf(originalSize.numberOfColumns())).intValue();
             int cardHeight = BigInteger.valueOf(height).divide(BigInteger.valueOf(originalSize.numberOfLines())).intValue();
-            BufferedImage outputImage = inputImage.getSubimage(columnIndex * cardWidth, lineIndex * cardHeight, (columnIndex + 1) * cardWidth, (lineIndex + 1) * cardHeight);
-            ImageIO.write(outputImage, getImageFileFormat(ImageIO.createImageInputStream(inputStream)), outputStream);
+            BufferedImage outputImage = inputImage.getSubimage(columnIndex * cardWidth, lineIndex * cardHeight, cardWidth, cardHeight);
+            ImageIO.write(outputImage, imageType, outputStream);
             return outputStream.toByteArray();
         } catch (IOException e) {
             throw new RuntimeException(e);

@@ -1,5 +1,7 @@
 package munchkin.integrator.domain.boards;
 
+import munchkin.integrator.domain.card.Card;
+
 import java.util.List;
 
 public interface UploadBoard {
@@ -8,5 +10,5 @@ public interface UploadBoard {
 
     List<Board> getAllBoards(boolean resizeImages);
 
-    Board cropBoard(long boardId, boolean persistCropsCards);
+    List<Card> cropBoard(long boardId, boolean persistCropsCards);
 }
