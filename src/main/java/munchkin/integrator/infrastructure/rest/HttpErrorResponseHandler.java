@@ -17,19 +17,19 @@ public class HttpErrorResponseHandler {
 
     @ExceptionHandler(InvalidMediaTypeException.class)
     public ResponseEntity<String> handleFileTypeError(InvalidMediaTypeException imte) {
-        LOG.debug(imte.toString());
+        LOG.debug("Invalide file format", imte);
         return new ResponseEntity<>(imte.getMessage(), HttpStatus.UNSUPPORTED_MEDIA_TYPE);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<String> handleFileTypeError(IllegalArgumentException iae) {
-        LOG.debug(iae.toString());
+        LOG.debug("Bad argument", iae);
         return new ResponseEntity<>(iae.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(MissingResourceException.class)
     public ResponseEntity<String> handleMissionRessourceError(MissingResourceException mre) {
-        LOG.debug(mre.toString());
+        LOG.debug("Not find resource", mre);
         return new ResponseEntity<>(mre.getMessage(), HttpStatus.NOT_FOUND);
     }
 }

@@ -50,26 +50,26 @@ class CardControllerShould {
     }
 
     @Test
-    public void reject_crop_cards_when_board_param_is_not_present_with_bad_request() throws Exception {
-        mvc.perform(put("/cards/crop")).andExpect(status().isBadRequest());
+    public void reject_crop_cards_when_board_param_is_not_present_with_not_found() throws Exception {
+        mvc.perform(put("/cards/crop/{boardId}", "")).andExpect(status().isNotFound());
     }
 
     @Test
     public void reject_crop_cards_when_board_requested_not_exist() throws Exception {
         doThrow(new MissingResourceException("No board found", "Board", "1")).when(mockBoardUploadingService).cropBoard(eq(1L), eq(false));
-        mvc.perform(put("/cards/crop").param("boardId", "1")).andExpect(status().isNotFound());
+        mvc.perform(put("/cards/crop/{boardId}", "1")).andExpect(status().isNotFound());
     }
 
     @Test
     public void ask_crop_on_board_when_all_params_is_good() throws Exception {
-        mvc.perform(put("/cards/crop").param("boardId", "1"));
+        mvc.perform(put("/cards/crop/{boardId}", "1"));
 
         verify(mockBoardUploadingService).cropBoard(eq(1L), eq(false));
     }
 
     @Test
     public void ask_crop_on_board_should_return_ok_http_code() throws Exception {
-        mvc.perform(put("/cards/crop").param("boardId", "1")).andExpect(status().isOk());
+        mvc.perform(put("/cards/crop/{boardId}", "1")).andExpect(status().isOk());
     }
 
     @Test
@@ -84,9 +84,16 @@ class CardControllerShould {
         serviceReturnCards.add(new Card(new Asset(new Image("IMAGE2".getBytes()), new AssetIndex(0, 0))));
         doReturn(serviceReturnCards).when(mockBoardUploadingService).cropBoard(anyLong(), anyBoolean());
 
-        String restResponseAsString = mvc.perform(put("/cards/crop").param("boardId", "1")).andReturn().getResponse().getContentAsString();
+        String restResponseAsString = mvc.perform(put("/cards/crop/{boardId}", "1")).andReturn().getResponse().getContentAsString();
 
         CardResponseWithImage[] returnedObject = jsonMapper.readValue(restResponseAsString, CardResponseWithImage[].class);
         assertThat(returnedObject).hasSameElementsAs(expectedResponse);
+    }
+
+    @Test
+    public void ask_crop_on_board_and_save_must_call_service_with_good_param() throws Exception {
+        mvc.perform(put("/cards/crop/{boardId}", "1").param("persist", "true")).andExpect(status().isOk());
+
+        verify(mockBoardUploadingService).cropBoard(eq(1L), eq(true));
     }
 }

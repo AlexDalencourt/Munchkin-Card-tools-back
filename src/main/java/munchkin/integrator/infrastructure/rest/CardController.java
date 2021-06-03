@@ -7,6 +7,7 @@ import munchkin.integrator.infrastructure.rest.responses.cards.CardResponseWithI
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.requireNonNull;
@@ -23,13 +24,13 @@ public class CardController {
         return Type.values();
     }
 
-    @PutMapping("/crop")
+    @PutMapping("/crop/{boardId}")
     @ResponseStatus(OK)
-    public List<CardResponseWithImage> cropBoard(@RequestParam Long boardId) {
+    public List<CardResponseWithImage> cropBoard(@PathVariable Long boardId, @RequestParam Optional<Boolean> persist) {
         if (boardId == null) {
             throw new IllegalArgumentException("boardId null");
         }
-        List<Card> cropedCards = boardUploadingService.cropBoard(boardId, false);
+        List<Card> cropedCards = boardUploadingService.cropBoard(boardId, persist.orElse(false));
         return cropedCards.stream().map(card -> card.cardAsset().image().image()).map(CardResponseWithImage::new).collect(Collectors.toList());
     }
 
