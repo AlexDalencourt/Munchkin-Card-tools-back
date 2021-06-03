@@ -30,6 +30,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(CardController.class)
 class CardControllerShould {
 
+    public static final String PATH_CROP_BOARD = "/cards/crop/{boardId}";
+    public static final String PATH_ALL_CARDS_TYPES = "/cards/types";
+
+    public static final String REQUEST_PARAM_PERSIST = "persist";
+
     private final MockMvc mvc;
     private final ObjectMapper jsonMapper;
 
@@ -43,7 +48,7 @@ class CardControllerShould {
 
     @Test
     public void return_all_types_of_card() throws Exception {
-        String outputString = mvc.perform(get("/cards/types")).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        String outputString = mvc.perform(get(PATH_ALL_CARDS_TYPES)).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         Type[] listOfTypes = jsonMapper.readValue(outputString, Type[].class);
 
         assertThat(listOfTypes).hasSameElementsAs(Arrays.asList(Type.values()));
@@ -51,25 +56,25 @@ class CardControllerShould {
 
     @Test
     public void reject_crop_cards_when_board_param_is_not_present_with_not_found() throws Exception {
-        mvc.perform(put("/cards/crop/{boardId}", "")).andExpect(status().isNotFound());
+        mvc.perform(put(PATH_CROP_BOARD, "")).andExpect(status().isNotFound());
     }
 
     @Test
     public void reject_crop_cards_when_board_requested_not_exist() throws Exception {
         doThrow(new MissingResourceException("No board found", "Board", "1")).when(mockBoardUploadingService).cropBoard(eq(1L), eq(false));
-        mvc.perform(put("/cards/crop/{boardId}", "1")).andExpect(status().isNotFound());
+        mvc.perform(put(PATH_CROP_BOARD, "1")).andExpect(status().isNotFound());
     }
 
     @Test
     public void ask_crop_on_board_when_all_params_is_good() throws Exception {
-        mvc.perform(put("/cards/crop/{boardId}", "1"));
+        mvc.perform(put(PATH_CROP_BOARD, "1"));
 
         verify(mockBoardUploadingService).cropBoard(eq(1L), eq(false));
     }
 
     @Test
     public void ask_crop_on_board_should_return_ok_http_code() throws Exception {
-        mvc.perform(put("/cards/crop/{boardId}", "1")).andExpect(status().isOk());
+        mvc.perform(put(PATH_CROP_BOARD, "1")).andExpect(status().isOk());
     }
 
     @Test
@@ -84,7 +89,7 @@ class CardControllerShould {
         serviceReturnCards.add(new Card(new Asset(new Image("IMAGE2".getBytes()), new AssetIndex(0, 0))));
         doReturn(serviceReturnCards).when(mockBoardUploadingService).cropBoard(anyLong(), anyBoolean());
 
-        String restResponseAsString = mvc.perform(put("/cards/crop/{boardId}", "1")).andReturn().getResponse().getContentAsString();
+        String restResponseAsString = mvc.perform(put(PATH_CROP_BOARD, "1")).andReturn().getResponse().getContentAsString();
 
         CardResponseWithImage[] returnedObject = jsonMapper.readValue(restResponseAsString, CardResponseWithImage[].class);
         assertThat(returnedObject).hasSameElementsAs(expectedResponse);
@@ -92,8 +97,13 @@ class CardControllerShould {
 
     @Test
     public void ask_crop_on_board_and_save_must_call_service_with_good_param() throws Exception {
-        mvc.perform(put("/cards/crop/{boardId}", "1").param("persist", "true")).andExpect(status().isOk());
+        mvc.perform(put(PATH_CROP_BOARD, "1").param(REQUEST_PARAM_PERSIST, "true")).andExpect(status().isCreated());
 
         verify(mockBoardUploadingService).cropBoard(eq(1L), eq(true));
+    }
+
+    @Test
+    public void ask_crop_on_board_and_save_must_end_with_created_status() throws Exception {
+        mvc.perform(put(PATH_CROP_BOARD, "1").param(REQUEST_PARAM_PERSIST, "true")).andExpect(status().isCreated());
     }
 }
