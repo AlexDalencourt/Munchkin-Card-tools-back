@@ -41,7 +41,7 @@ public class AssetController {
         if (numberOfColumns <= 0 || numberOfLines <= 0 || boardType == null) {
             throw new IllegalArgumentException("Number of columns and lines should be positive and superior to 0, and board type must be valid");
         }
-        if (!boardUploadingService.uploadNewBoard(new Board(null, new Sizing(numberOfColumns, numberOfLines), new Image(file.getBytes()), new ArrayList<Card>()))) {
+        if (!boardUploadingService.uploadNewBoard(new Board(null, new Sizing(numberOfColumns, numberOfLines), new Image(file.getBytes()), new ArrayList<>()))) {
             throw new ResponseStatusException(INTERNAL_SERVER_ERROR);
         }
     }

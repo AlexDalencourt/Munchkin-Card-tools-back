@@ -21,14 +21,17 @@ public class CardController {
 
     private final UploadBoard boardUploadingService;
 
+    @GetMapping()
+    public List<CardResponseWithImage> getAll(){
+        return null;
+    }
+
     @GetMapping("types")
     public Type[] getAllCardTypes() {
         return Type.values();
     }
 
     @PutMapping("/crop/{boardId}")
-//    @ResponseStatus(OK)
-//    @ResponseStatus(CREATED)
     public List<CardResponseWithImage> cropBoard(@PathVariable Long boardId, @RequestParam Optional<Boolean> persist, HttpServletResponse httpResponse) {
         if (boardId == null) {
             throw new IllegalArgumentException("boardId null");
